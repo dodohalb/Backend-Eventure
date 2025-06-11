@@ -4,7 +4,7 @@ import { User } from "./user";
 import {
   IsOptional,
   IsString,
-  IsDateString,
+  IsDate,
   ValidateNested,
   IsArray,
   IsNumber,
@@ -12,17 +12,26 @@ import {
 import { Type } from 'class-transformer';
 
 export abstract class  Event {
+
+    @ValidateNested()            
+    @Type(() => Adress)
     adress: Adress;
+
     @IsOptional()
     picture: Buffer | null;
+
     @IsString()
     name: string;
+
     @IsString()
     description: string;
-    @IsString()
-    date: String;
+
+    @IsDate()
+    date: Date;
+
     @IsString()
     type: string;
+
     @IsOptional()
     id: number;
 
@@ -31,7 +40,7 @@ export abstract class  Event {
         picture: Buffer | null,
         name: string,
         description: string,
-        date: String,
+        date: Date,
         type: string,
     ) {
         this.adress = adress;
@@ -54,7 +63,7 @@ export abstract class  Event {
     getDescription(): string {
         return this.description;
     }
-    getDate(): String {
+    getDate(): Date {
         return this.date;
     }
     getType(): string {
@@ -76,7 +85,7 @@ export abstract class  Event {
     setDescription(description: string): void {
         this.description = description;
     }
-    setDate(date: String): void {
+    setDate(date: Date): void {
         this.date = date;
     }
     setType(type: string): void {

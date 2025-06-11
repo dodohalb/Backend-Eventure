@@ -1,14 +1,15 @@
+import { Adress } from "./adress";
 import { Event } from "./event";
 
 export class PublicEvent extends Event {
-    constructor(parameters) {
-       super(
-            parameters.adress,
-            parameters.picture,
-            parameters.name,
-            parameters.description,
-            parameters.date,
-            parameters.typ
-        );  
-    }
+    constructor(
+                adress: Adress,
+                picture: Buffer | null,
+                name: string,
+                description: string,
+                date: Date,
+                type: string,
+            ) {
+                super(adress, picture, name, description, date, type);
+            }
 }
