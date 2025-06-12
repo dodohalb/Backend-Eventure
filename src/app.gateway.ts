@@ -1,111 +1,118 @@
-import { Logger, Controller, Get, Post, Body,Patch,Session,UseGuards,SetMetadata, } from '@nestjs/common';
-import { EventService } from './services/event.service';
-import { UserService } from './services/user.service';
-import { ChatService } from './services/chat.service';
-import { SwipeService } from './services/swipe.service';
-import { AuthService } from './services/auth.service';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { Event} from "./domainObjects/event";
-import { PrivateEvent } from "./domainObjects/privateEvent";
+import {
+  Logger,
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 
+import { EventService }   from './services/event.service';
+import { UserService }    from './services/user.service';
+import { ChatService }    from './services/chat.service';
+import { SwipeService }   from './services/swipe.service';
+import { AuthService }    from './services/auth.service';
+
+import { JwtAuthGuard }   from './auth/jwt-auth.guard';
+
+import { Event }          from './domainObjects/event';
+import { User }           from './domainObjects/user';
+import { Filter }         from './domainObjects/filter';
+
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Express }    from 'express';
+
+import { LoginDto }        from './auth/loginDto';
 
 @Controller()
 export class Gateway {
+  private logger = new Logger(Gateway.name);   // tag for Nest’s logger
+
   constructor(
+    /* Inject all business-layer services */
     private readonly eventService: EventService,
-    private readonly userService: UserService,
-    private readonly chatService: ChatService,
+    private readonly userService:  UserService,
+    private readonly chatService:  ChatService,
     private readonly swipeService: SwipeService,
-    private readonly authService: AuthService,
+    private readonly authService:  AuthService,
   ) {}
 
-  private logger = new Logger(Gateway.name);
+  // ─────────────────────── Auth ───────────────────────
 
+  /** Login with phone + password → returns JWT token */
   @Post('login')
-  async login(@Body() body: any, @Session() session: any): Promise<string> {
-    /* TODO: implement */
-    return undefined as any;
+  async login(@Body() loginDto: LoginDto): Promise<{ msg: string; token: string }> {
+    return this.authService.login(loginDto);
   }
 
+  /** Register new user (credentials + profile) → returns JWT on success */
   @Post('register')
-  async register(@Body() body: any, @Session() session: any): Promise<string> {
-    /* TODO: implement */
-    return undefined as any;
-  }
-   //@UseGuards(JwtAuthGuard)
-   @Post('message')
-  async sendMessage(@Body() body: any, @Session() session: any): Promise<void> {
-    /* TODO */
+  async register(@Body('user') user: User,@Body('password') password: string,): Promise<{ msg: string; token: string }> {
+    return this.authService.register(new LoginDto(user.phoneNumber, password), user);
   }
 
+  // ─────────────────────── User management ───────────────────────
+  // All routes below are JWT-protected → JwtAuthGuard validates token
+  // and injects req.user.
 
- // @UseGuards(JwtAuthGuard)
+  /** Host declines a pending participant */
+  @UseGuards(JwtAuthGuard)
   @Post('users/decline')
-  async declineUser(@Body() body: any, @Session() session: any): Promise<void> {
-    /* TODO */
+  async declineUser(@Body('eventId') eventId: number,@Body('userId')  userId:  number,): Promise<{ msg: string }> {
+    return this.userService.declineUser(eventId, userId);
   }
 
-  //@UseGuards(JwtAuthGuard)
+  /** Host authorises (confirms) a participant */
+  @UseGuards(JwtAuthGuard)
   @Post('users/authorize')
-  async authorizeUser(@Body() body: any, @Session() session: any): Promise<void> {
-    /* TODO */
+  async authorizeUser(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
+    return this.userService.authorizeUser(eventId, userId);
   }
 
-
- // @UseGuards(JwtAuthGuard)
-  @Patch('profile')
-  async updateProfile(@Body() body: any, @Session() session: any): Promise<void> {
-    /* TODO */
+  /** Logged-in user updates own profile */
+  @UseGuards(JwtAuthGuard)
+  @Post('profile')
+  async updateProfile(@Body() user: User): Promise<{ msg: string }> {
+    return this.userService.updateProfile(user);
   }
 
-
-  //@UseGuards(JwtAuthGuard)
-  @Post('events/join')
-  async joinEvent(@Body() body: any, @Session() session: any): Promise<void> {
-    /* TODO */
+  /** User swipes / joins an event */
+  @UseGuards(JwtAuthGuard)
+  @Post('join-event')
+  async joinEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
+    return this.swipeService.joinEvent(eventId, userId);
   }
 
+  // ─────────────────────── Event update / creation ───────────────────────
 
- // @UseGuards(JwtAuthGuard)
-  @Patch('events')
-  async updateEvent(@Body() body: any, @Session() session: any): Promise<void> {
-    /* TODO */
+  /** Host updates an existing event */
+  @UseGuards(JwtAuthGuard)
+  @Post('update-events')
+  async updateEvent(@Body() event: Event): Promise<{ msg: string }> {
+    return this.eventService.updateEvent(event);
   }
 
-
- // @UseGuards(JwtAuthGuard)
-  @Post('events/private')
-  async createPrivateEvent(@Body() event: PrivateEvent): Promise<Event> {
-    //console.log(event.getDescription)
-    //this.logger.log("createPublicEvent called", event.name);
-    //return event
-    return this.eventService.createPrivateEvent(event);
+  /** Host creates a new event – accepts multipart (picture + JSON string) */
+  @UseGuards(JwtAuthGuard)
+  @Post('create-event')
+  @UseInterceptors(FileInterceptor('picture'))   // Multer: extract file-part
+  async createEvent(@UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string; event: Event }> {
+    return this.eventService.createEvent(file, eventString);
   }
 
- // @UseGuards(JwtAuthGuard)
-  @Post('events/public')
-  async createPublicEvent(@Body() event: PrivateEvent): Promise<Event> {
-    this.logger.log("createPublicEvent called", event.name);
-    console.log("test");
-   console.log("Ich hoffe hier kommt die Beschreibung:" ,event.getDescription);
-    return event
-    //return this.eventService.createEvent(event, session.user.id);
+  /** Get event list by filter – expects JSON body even on GET */
+  @UseGuards(JwtAuthGuard)
+  @Get('get-events')
+  async getEvents(@Body('filter') filter: Filter, @Body('phoneNumber') phoneNumber: number): Promise<Event[]> {
+    return this.swipeService.getEvents(filter, phoneNumber);
   }
 
-
-
-  //@UseGuards(JwtAuthGuard)
-  @Get('events')
-  async getEvents(@Body() body: any, @Session() session: any): Promise<any[]> {
-    /* TODO */
-    return undefined as any;
+  /** Placeholder for chat message endpoint (to be implemented) */
+  @UseGuards(JwtAuthGuard)
+  @Post('message')
+  async sendMessage(): Promise<void> {
+    // TODO: Implement message sending logic
   }
-
-
-  @Get('ping')
-  ping() {
-    return { status: 'ok' };
-  }
-
-  
 }
