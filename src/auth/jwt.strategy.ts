@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
@@ -8,12 +8,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET || 'very_secret_string',
+      secretOrKey: 'secret-key',
     });
   }
 
-  validate(payload: { sub: number; phone: number }) {
-    // landet als request.user
-    return { userId: payload.sub, phone: payload.phone };
+  validate(payload: { sub: number }) {
+    return { phoneNumber: payload.sub }; // Return the phone number from the JWT payload
   }
 }

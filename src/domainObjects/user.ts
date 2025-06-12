@@ -1,5 +1,5 @@
 import { IsNumber, IsString, ValidateNested } from "class-validator";
-import { Adress } from "./adress";
+import { Address } from "./address";
 import { Type } from "class-transformer";
 
 export class User {
@@ -18,8 +18,8 @@ export class User {
     phoneNumber: number;
     
     @ValidateNested()    
-    @Type(() => Adress)
-    adress: Adress;
+    @Type(() => Address)
+    adress: Address;
 
 
 
@@ -29,7 +29,7 @@ export class User {
         biographie: string,
         age: number,
         phoneNumber: number,
-        adress: Adress
+        adress: Address
     ) {
         this.name = name;
         this.biographie = biographie;
