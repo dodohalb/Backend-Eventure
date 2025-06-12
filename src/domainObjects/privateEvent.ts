@@ -1,22 +1,15 @@
 import { Event } from "./event";
 import { ChatMassage } from "./chatMessage";
 import { User } from "./user";
-import { Adress } from "./adress";
-import { ValidateNested } from "class-validator";
-import { Type } from "class-transformer";
+import { Address } from "./address";
 
 export class PrivateEvent extends Event {
-    @ValidateNested()              // <– 1-Objekt-Tiefe
-    @Type(() => User)
     users: User[];
-
-    @ValidateNested()              // <– 1-Objekt-Tiefe
-    @Type(() => ChatMassage)
     chat: ChatMassage[];
 
 
     constructor(
-            adress: Adress,
+            adress: Address,
             picture: Buffer | null,
             name: string,
             description: string,

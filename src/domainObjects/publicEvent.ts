@@ -1,9 +1,9 @@
-import { Adress } from "./adress";
+import { Address } from "./address";
 import { Event } from "./event";
 
 export class PublicEvent extends Event {
     constructor(
-                adress: Adress,
+                adress: Address,
                 picture: Buffer | null,
                 name: string,
                 description: string,

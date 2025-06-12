@@ -1,6 +1,6 @@
 import { IsNumber, IsString } from "class-validator";
 
-export class Adress {
+export class Address {
     
     @IsString()
     street: string;
