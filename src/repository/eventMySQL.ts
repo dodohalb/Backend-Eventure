@@ -9,13 +9,13 @@ export class EventMySQL implements DAO<any> {
     get(id: number): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    insert(obj: any): Promise<void> {
+    insert(obj: any): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    update(obj: any): Promise<void> {
+    update(obj: any): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    delete(id: number): Promise<void> {
+    delete(id: number): Promise<any> {
         throw new Error("Method not implemented.");
     }
 }
