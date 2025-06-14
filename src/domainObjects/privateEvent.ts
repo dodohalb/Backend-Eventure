@@ -2,7 +2,7 @@ import { Event } from "./event";
 import { ChatMessage } from "./chatMessage";
 import { User } from "./user";
 import { Address } from "./address";
-import { IsArray, ValidateNested } from "class-validator";
+import { IsArray, IsBoolean, IsNumber, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 
 export class PrivateEvent extends Event {
@@ -15,6 +15,15 @@ export class PrivateEvent extends Event {
     @ValidateNested({ each: true })
     @Type(() => ChatMessage)
     chat: ChatMessage[];
+    
+    @IsNumber()
+    maxMembers: number;
+
+    @IsBoolean()
+    visibility: boolean;
+
+    @IsBoolean()
+    authorization: boolean;
 
 
     constructor(
