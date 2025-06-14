@@ -96,8 +96,9 @@ export class AppController {
   /** Host updates an existing event */
   @UseGuards(JwtAuthGuard)
   @Post('update-events')
-  async updateEvent(@Body() event: Event): Promise<{ msg: string }> {
-    return this.eventService.updateEvent(event);
+  @UseInterceptors(FileInterceptor('picture')) 
+  async updateEvent(@UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string }> {
+    return this.eventService.updateEvent(file, eventString);
   }
 
   /** Host creates a new event – accepts multipart (picture + JSON string) */
@@ -110,7 +111,7 @@ export class AppController {
 
   /** Get event list by filter – expects JSON body even on GET */
   @UseGuards(JwtAuthGuard)
-  @Get('get-events')
+  @Post('get-events')
   async getEvents(@Body('filter') filter: Filter, @Body('phoneNumber') phoneNumber: number): Promise<Event[]> {
     return this.swipeService.getEvents(filter, phoneNumber);
   }

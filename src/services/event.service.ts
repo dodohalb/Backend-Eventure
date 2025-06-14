@@ -15,8 +15,8 @@ export class EventService {
 
 
     /* Update an existing event (TODO: implement DB logic) */
-    updateEvent(event: Event): Promise<{ msg: string }> {
-        this.logger.log("updateEvent called for event:", event.name);
+    updateEvent(file: Express.Multer.File, eventString: string): Promise<{ msg: string }> {
+        this.logger.log("updateEvent called for event:", eventString);
         throw new Error('Method not implemented.');
     }
 
