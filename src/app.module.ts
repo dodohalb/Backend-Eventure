@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { Gateway } from './app.gateway';
 import { JwtModule } from '@nestjs/jwt';  
 
+import { AppController } from './app.controller';
+
 import { AuthService } from './services/auth.service';
 import { EventService } from './services/event.service';
 import { UserService } from './services/user.service';
@@ -12,8 +14,6 @@ import { ChatMySQL } from './repository/chatMySQL';
 import { EventMySQL } from './repository/eventMySQL';
 import { UserMySQL } from './repository/userMySQL';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { randomUUID } from 'crypto';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/jwt.strategy';
 
@@ -28,8 +28,9 @@ import { JwtStrategy } from './auth/jwt.strategy';
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
     })
   ],
-  controllers: [Gateway],
+  controllers: [AppController],
   providers: [
+    Gateway,
     AuthService, EventService, UserService, ChatService, SwipeService, 
     AuthMySQL, ChatMySQL, EventMySQL, UserMySQL,
     JwtStrategy

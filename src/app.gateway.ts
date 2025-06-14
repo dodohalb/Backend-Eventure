@@ -1,13 +1,4 @@
-import {
-  Logger,
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  UseInterceptors,
-  UploadedFile,
-} from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 
 import { EventService }   from './services/event.service';
 import { UserService }    from './services/user.service';
@@ -15,20 +6,21 @@ import { ChatService }    from './services/chat.service';
 import { SwipeService }   from './services/swipe.service';
 import { AuthService }    from './services/auth.service';
 
-import { JwtAuthGuard }   from './auth/jwt-auth.guard';
+import { MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { ChatMessage } from './domainObjects/chatMessage';
 
-import { Event }          from './domainObjects/event';
-import { User }           from './domainObjects/user';
-import { Filter }         from './domainObjects/filter';
+@WebSocketGateway({
+      namespace: '/ws',        
+      transports: ['websocket']
+})
+export class Gateway implements OnGatewayConnection {
 
-import { FileInterceptor } from '@nestjs/platform-express';
-import type { Express }    from 'express';
-
-import { LoginDto }        from './auth/loginDto';
-
-@Controller()
-export class Gateway {
+  private socketsByUser = new Map<number, Set<Socket>>();
   private logger = new Logger(Gateway.name);   // tag for Nest’s logger
+
+  @WebSocketServer()
+  server: Server; 
 
   constructor(
     /* Inject all business-layer services */
@@ -39,80 +31,43 @@ export class Gateway {
     private readonly authService:  AuthService,
   ) {}
 
-  // ─────────────────────── Auth ───────────────────────
+  // ─────────────────────── WebSocket ───────────────────────
+  async handleConnection(client: Socket) {      // wird automatisch aufgerufen
+    const phoneNumber  = await this.authService.authenticate(client);
+    if (!phoneNumber) {// unauthenticated
+      client.disconnect(); // disconnect if no phone number found
+      return;
+    } 
+    
+    client.join(String(phoneNumber)); // join room by phone number
+   
+    /* vorhandenes Set holen oder neu anlegen */
+    const set = this.socketsByUser.get(phoneNumber) ?? new Set<Socket>();
+    set.add(client);
+    this.socketsByUser.set(phoneNumber, set);
 
-  /** Login with phone + password → returns JWT token */
-  @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<{ msg: string; token: string }> {
-    return this.authService.login(loginDto);
-  }
+    /* beim Disconnect sauber entfernen */
+  client.on('disconnect', () => {
+    set.delete(client);
+    if (set.size === 0) this.socketsByUser.delete(phoneNumber);
+  });
 
-  /** Register new user (credentials + profile) → returns JWT on success */
-  @Post('register')
-  async register(@Body('user') user: User,@Body('password') password: string,): Promise<{ msg: string; token: string }> {
-    return this.authService.register(new LoginDto(user.phoneNumber, password), user);
-  }
-
-  // ─────────────────────── User management ───────────────────────
-  // All routes below are JWT-protected → JwtAuthGuard validates token
-  // and injects req.user.
-
-  /** Host declines a pending participant */
-  @UseGuards(JwtAuthGuard)
-  @Post('users/decline')
-  async declineUser(@Body('eventId') eventId: number,@Body('userId')  userId:  number,): Promise<{ msg: string }> {
-    return this.userService.declineUser(eventId, userId);
-  }
-
-  /** Host authorises (confirms) a participant */
-  @UseGuards(JwtAuthGuard)
-  @Post('users/authorize')
-  async authorizeUser(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
-    return this.userService.authorizeUser(eventId, userId);
-  }
-
-  /** Logged-in user updates own profile */
-  @UseGuards(JwtAuthGuard)
-  @Post('profile')
-  async updateProfile(@Body() user: User): Promise<{ msg: string }> {
-    return this.userService.updateProfile(user);
-  }
-
-  /** User swipes / joins an event */
-  @UseGuards(JwtAuthGuard)
-  @Post('join-event')
-  async joinEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
-    return this.swipeService.joinEvent(eventId, userId);
-  }
-
-  // ─────────────────────── Event update / creation ───────────────────────
-
-  /** Host updates an existing event */
-  @UseGuards(JwtAuthGuard)
-  @Post('update-events')
-  async updateEvent(@Body() event: Event): Promise<{ msg: string }> {
-    return this.eventService.updateEvent(event);
-  }
-
-  /** Host creates a new event – accepts multipart (picture + JSON string) */
-  @UseGuards(JwtAuthGuard)
-  @Post('create-event')
-  @UseInterceptors(FileInterceptor('picture'))   // Multer: extract file-part
-  async createEvent(@UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string; event: Event }> {
-    return this.eventService.createEvent(file, eventString);
-  }
-
-  /** Get event list by filter – expects JSON body even on GET */
-  @UseGuards(JwtAuthGuard)
-  @Get('get-events')
-  async getEvents(@Body('filter') filter: Filter, @Body('phoneNumber') phoneNumber: number): Promise<Event[]> {
-    return this.swipeService.getEvents(filter, phoneNumber);
+  this.logger.log(`✚ client ${client.id} mapped to user ${phoneNumber}`);
   }
 
   /** Placeholder for chat message endpoint (to be implemented) */
-  @UseGuards(JwtAuthGuard)
-  @Post('message')
-  async sendMessage(): Promise<void> {
-    // TODO: Implement message sending logic
+    @SubscribeMessage('chatMessage')
+    async sendMessage(@MessageBody("chatMessage") chatMessage: ChatMessage, @MessageBody("eventId") eventId: number ) {
+      const result = await this.chatService.sendMessage(chatMessage,eventId);
+      if(!result){
+
+      }
+      // TODO: Implement message sending logic
+    }
+
+  @SubscribeMessage('ping') 
+  handlePing(@MessageBody() data: any) {
+    return 'pong';                    // Socket.io schickt als ACK zurück
   }
+
 }

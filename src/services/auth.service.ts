@@ -6,6 +6,7 @@ import { User } from 'src/domainObjects/user';
 import { LoginDto } from 'src/auth/loginDto';
 import { AuthMySQL } from 'src/repository/authMySQL';
 import { UserMySQL } from 'src/repository/userMySQL';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class AuthService {
@@ -77,5 +78,20 @@ export class AuthService {
   /* helper – create compact JWT payload { sub: phoneNumber } */
   private sign(phoneNumber: number) {
     return this.jwt.sign({ sub: phoneNumber });
+  }
+
+  async authenticate(client: Socket): Promise<number | null>{
+    const token = client.handshake.auth?.token as string | undefined;  // JWT token from client
+    if (!token) {
+      this.logger.warn('Client connected without token:', client.id);
+      return null;
+    }
+    try {
+      const payload = this.jwt.verify(token.replace(/^Bearer\s/, ''));  // verify JWT
+      return payload.sub;
+    }catch (error) {
+      this.logger.warn('✖ bad token, disconnecting:', client.id);
+      return null;
+    }
   }
 }
