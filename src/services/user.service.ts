@@ -1,15 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { User } from 'src/domainObjects/user';
+import { DAO } from 'src/repository/dao';
+import { UserMySQL } from 'src/repository/userMySQL';
 
 @Injectable()
 export class UserService {
     private logger = new Logger(UserService.name);
+    private dao: DAO<User> = new UserMySQL(); 
+
 
     updateProfile(user: User): Promise<{msg: string}> {
         this.logger.log("updateProfile called for user:", user.name);
-        //throw new Error('Method not implemented.');
+        const newProfile = this.dao.update(user);
+        if (!newProfile) {
+            this.logger.error("Failed to update profile for user:", user.name);
+        }
         return Promise.resolve({msg: "Profile updated successfully"});
     }
+    
     authorizeUser(eventId: number, userId: number): Promise<{msg: string}> {
         this.logger.log("authorizeUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
