@@ -1,11 +1,20 @@
 import { Event } from "./event";
-import { ChatMassage } from "./chatMessage";
+import { ChatMessage } from "./chatMessage";
 import { User } from "./user";
 import { Address } from "./address";
+import { IsArray, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
 
 export class PrivateEvent extends Event {
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => User)
     users: User[];
-    chat: ChatMassage[];
+     
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ChatMessage)
+    chat: ChatMessage[];
 
 
     constructor(
@@ -23,7 +32,7 @@ export class PrivateEvent extends Event {
      getUsers(): User[] {
         return this.users;
     }
-    getChat(): ChatMassage[] {
+    getChat(): ChatMessage[] {
         return this.chat;
     }
      addUser(user: User): void {
@@ -32,10 +41,10 @@ export class PrivateEvent extends Event {
     removeUser(user: User): void {
        // this.users = this.users.filter(u => u.getId() !== user.getId());
     }
-    addChatMessage(chatMessage: ChatMassage): void {
+    addChatMessage(chatMessage: ChatMessage): void {
         this.chat.push(chatMessage);
     }
-    removeChatMessage(chatMessage: ChatMassage): void {
+    removeChatMessage(chatMessage: ChatMessage): void {
      //   this.chat = this.chat.filter(c => c.getId() !== chatMessage.getId());
     }
 }
