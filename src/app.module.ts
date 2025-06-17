@@ -1,8 +1,19 @@
 import { Module } from '@nestjs/common';
 import { Gateway } from './app.gateway';
-import { JwtModule } from '@nestjs/jwt';  
+import { JwtModule } from '@nestjs/jwt';
+
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
+
+import { UserEntity } from './entities/user.entity';
+import { AddressEntity } from './entities/address.entity';
+import { ChatMessageEntity } from './entities/chat_message.entity';
+import { EventEntity } from './entities/event.entity';
+import { PrivateEventEntity } from './entities/private_event.entity';
+import { PublicEventEntity } from './entities/public_event.entity';
+import { FilterEntity } from './entities/filter.entity';
 
 import { AuthService } from './services/auth.service';
 import { EventService } from './services/event.service';
@@ -22,6 +33,35 @@ import { TestController } from './test.controller';
 
 @Module({
   imports: [
+
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
+      entities: [
+        UserEntity,
+        AddressEntity,
+        ChatMessageEntity,
+        EventEntity,
+        PrivateEventEntity,
+        PublicEventEntity,
+        FilterEntity,
+      ],
+      synchronize: true,
+      autoLoadEntities: true,
+      ssl: { rejectUnauthorized: false },
+    }),
+
+    TypeOrmModule.forFeature([
+      UserEntity,
+      AddressEntity,
+      ChatMessageEntity,
+      PrivateEventEntity,
+      PublicEventEntity,
+      FilterEntity,
+    ]),
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/static',
@@ -38,9 +78,9 @@ import { TestController } from './test.controller';
   controllers: [AppController, TestController],
   providers: [
     Gateway,
-    AuthService, EventService, UserService, ChatService, SwipeService, 
+    AuthService, EventService, UserService, ChatService, SwipeService,
     AuthMySQL, ChatMySQL, EventMySQL, UserMySQL,
     JwtStrategy
   ]
 })
-export class AppModule {}
+export class AppModule { }
