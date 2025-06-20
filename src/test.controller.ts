@@ -7,11 +7,14 @@ import {
   UploadedFile,
   UseInterceptors,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { IsPhoneNumber, IsStrongPassword } from 'class-validator';
 
 @Controller('test')
 export class TestController {
+  private logger = new Logger(TestController.name);
   private readonly STUB_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.stub-token';
 
   private validateStubToken(authHeader: string) {
@@ -27,6 +30,7 @@ export class TestController {
   /** POST /test/login */
   @Post('login')
   login(@Body() dto: { phoneNumber: number; password: string }) {
+    this.logger.log("Login versuch von: ", dto.phoneNumber);
     return {
       msg: 'logged in',
       token: this.STUB_TOKEN,

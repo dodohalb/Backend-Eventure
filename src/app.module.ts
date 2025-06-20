@@ -35,7 +35,7 @@ import { TestController } from './test.controller';
   imports: [
 
     ConfigModule.forRoot({ isGlobal: true }),
-
+    /*
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
@@ -61,7 +61,7 @@ import { TestController } from './test.controller';
       PublicEventEntity,
       FilterEntity,
     ]),
-
+    */
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/static',
