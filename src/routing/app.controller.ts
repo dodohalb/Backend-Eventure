@@ -9,22 +9,22 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 
-import { EventService }   from './services/event.service';
-import { UserService }    from './services/user.service';
-import { ChatService }    from './services/chat.service';
-import { SwipeService }   from './services/swipe.service';
-import { AuthService }    from './services/auth.service';
+import { EventService }   from '../services/event.service';
+import { UserService }    from '../services/user.service';
+import { ChatService }    from '../services/chat.service';
+import { SwipeService }   from '../services/swipe.service';
+import { AuthService }    from '../services/auth.service';
 
-import { JwtAuthGuard }   from './auth/jwt-auth.guard';
+import { JwtAuthGuard }   from '../auth/jwt-auth.guard';
 
-import { Event }          from './domainObjects/event';
-import { User }           from './domainObjects/user';
-import { Filter }         from './domainObjects/filter';
+import { Event }          from '../domainObjects/event';
+import { User }           from '../domainObjects/user';
+import { Filter }         from '../domainObjects/filter';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express }    from 'express';
 
-import { LoginDto }        from './auth/loginDto';
+import { LoginDto }        from '../auth/loginDto';
 import { Gateway } from './app.gateway';
 
 @Controller()

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { Gateway } from './app.gateway';
+import { Gateway } from './routing/app.gateway';
 import { JwtModule } from '@nestjs/jwt';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 
-import { AppController } from './app.controller';
+import { AppController } from './routing/app.controller';
 
 import { UserEntity } from './entities/user.entity';
 import { AddressEntity } from './entities/address.entity';
@@ -29,16 +29,17 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { TestController } from './test.controller';
+import { TestController } from './routing/test.controller';
+import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';  
 
 @Module({
   imports: [
 
     ConfigModule.forRoot({ isGlobal: true }),
-    /*
+    
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: process.env.DATABASE_URL,
+      url: DATABASE_URL,
       entities: [
         UserEntity,
         AddressEntity,
@@ -61,7 +62,7 @@ import { TestController } from './test.controller';
       PublicEventEntity,
       FilterEntity,
     ]),
-    */
+    
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/static',
@@ -72,7 +73,7 @@ import { TestController } from './test.controller';
     PassportModule,
     JwtModule.register({
       secret: "secret-key",
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
+      signOptions: { expiresIn: JWT_EXPIRES_IN || '1d' },
     })
   ],
   controllers: [AppController, TestController],

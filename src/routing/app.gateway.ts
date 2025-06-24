@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common';
 
-import { EventService }   from './services/event.service';
-import { UserService }    from './services/user.service';
-import { ChatService }    from './services/chat.service';
-import { SwipeService }   from './services/swipe.service';
-import { AuthService }    from './services/auth.service';
+import { EventService }   from '../services/event.service';
+import { UserService }    from '../services/user.service';
+import { ChatService }    from '../services/chat.service';
+import { SwipeService }   from '../services/swipe.service';
+import { AuthService }    from '../services/auth.service';
 
 import { MessageBody, OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ChatMessage } from './domainObjects/chatMessage';
+import { ChatMessage } from '../domainObjects/chatMessage';
 
 @WebSocketGateway({
       namespace: '/ws',        
@@ -58,6 +58,7 @@ export class Gateway implements OnGatewayConnection {
   /** Placeholder for chat message endpoint (to be implemented) */
     @SubscribeMessage('chatMessage')
     async sendMessage(@MessageBody("chatMessage") chatMessage: ChatMessage, @MessageBody("eventId") eventId: number ) {
+      const receivers = this.chatService.sendMessage(chatMessage,eventId);
       const result = await this.chatService.sendMessage(chatMessage,eventId);
       if(!result){
 
