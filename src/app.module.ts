@@ -30,7 +30,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TestController } from './routing/test.controller';
-import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';  
+import { DATABASE_URL, JWT_EXPIRES_IN} from './config/constants';  
 
 @Module({
   imports: [

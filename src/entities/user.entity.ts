@@ -16,7 +16,7 @@ export class UserEntity {
   age: number;
 
   @Column()
-  phoneNumber: number;
+  phoneNumber: string;
 
   @ManyToOne(() => AddressEntity, { cascade: true, eager: true })
   @JoinColumn()

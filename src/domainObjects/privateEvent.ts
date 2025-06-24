@@ -27,14 +27,14 @@ export class PrivateEvent extends Event {
 
 
     constructor(
-            adress: Address,
+            address: Address,
             picture: Buffer | null,
             name: string,
             description: string,
             date: Date,
             type: string,
         ) {
-            super(adress, picture, name, description, date, type);
+            super(address, picture, name, description, date, type);
         this.users = [];
         this.chat = [];
         }

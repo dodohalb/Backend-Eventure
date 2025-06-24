@@ -1,7 +1,7 @@
 import { IsNumber, IsString } from "class-validator";
 
 export class Address {
-    
+
     @IsString()
     street: string;
 

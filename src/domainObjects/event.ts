@@ -33,14 +33,14 @@ export abstract class  Event {
     id: number;
 
     constructor(
-        adress: Address,
+        address: Address,
         picture: Buffer | null,
         name: string,
         description: string,
         date: Date,
         type: string,
     ) {
-        this.address = adress;
+        this.address = address;
         this.picture = picture;
         this.name = name;
         this.description = description;

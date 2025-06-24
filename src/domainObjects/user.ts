@@ -14,12 +14,12 @@ export class User {
     @IsNumber()
     age: number;
 
-    @IsNumber()
-    phoneNumber: number;
+    @IsString()
+    phoneNumber: string;
     
     @ValidateNested()    
     @Type(() => Address)
-    adress: Address;
+    address: Address;
 
 
 
@@ -28,14 +28,14 @@ export class User {
         name: string,
         biographie: string,
         age: number,
-        phoneNumber: number,
-        adress: Address
+        phoneNumber: string,
+        address: Address
     ) {
         this.name = name;
         this.biographie = biographie;
         this.age = age;
         this.phoneNumber = phoneNumber;
-        this.adress = adress;
+        this.address = address;
         
     }
 }
