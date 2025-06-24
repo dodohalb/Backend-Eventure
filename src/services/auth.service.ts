@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DAO } from 'src/repository/dao';
 import * as bcrypt from 'bcrypt';
@@ -14,20 +14,24 @@ export class AuthService {
   private logger = new Logger(AuthService.name);
 
   /* Credential-table DAO (phoneNumber + pwHash) */
-  private daoAuth: DAO<LoginDto>= new AuthMySQL();
+  //private daoAuth: DAO<LoginDto>= new AuthMySQL();
 
   /* Profile-table DAO (name, adress, …) */
-  private daoUser: DAO<User> = new UserMySQL();
+  //private daoUser: DAO<User> = new UserMySQL();
 
 
 
   /* JwtService is injected via Nest’s DI container */
-  constructor(private readonly jwt: JwtService) {}
+  constructor(
+    private readonly jwt: JwtService,
+    @Inject(AuthMySQL) private readonly daoAuth: DAO<LoginDto>,
+    @Inject(UserMySQL) private readonly daoUser: DAO<User>,
+  ) { }
 
 
 
   /* -----------------------------  REGISTER  ----------------------------- */
-  async register(dto: LoginDto, user: User): Promise<{msg: string, token: string}> {
+  async register(dto: LoginDto, user: User): Promise<{ msg: string, token: string }> {
     this.logger.log("Registering user:", user.name);
 
     /* 1) hash plaintext password with salt rounds = 12 */
@@ -35,28 +39,28 @@ export class AuthService {
 
     /* 2) abort if phone number already taken */
     const dbUser = await this.daoAuth.get(dto.phoneNumber);
-    if(dbUser)
+    if (dbUser)
       throw new UnauthorizedException('User already exists with this phone number');
 
     /* 3) store credentials (phone + hash) */
     const newUser = await this.daoAuth.insert(new LoginDto(dto.phoneNumber, hash));
-    if(!newUser)
+    if (!newUser)
       throw new UnauthorizedException('User registration failed');
 
     /* 4) store user profile */
     const newUserDetails = await this.daoUser.insert(user);
-    if(!newUserDetails)
+    if (!newUserDetails)
       throw new UnauthorizedException('User details registration failed');
 
     /* 5) issue JWT */
-    const token = this.sign(user.phoneNumber);
+    const token = this.sign(dto.phoneNumber);
     return { msg: "User registered successfully", token };
   }
 
 
 
   /* -------------------------------  LOGIN  ------------------------------- */
-  async login(dto: LoginDto): Promise<{msg: string, token: string}> {
+  async login(dto: LoginDto): Promise<{ msg: string, token: string }> {
     this.logger.log("Login attempt for phone number:", dto.phoneNumber);
 
     /* 1) fetch stored hash for this phone number */
@@ -80,16 +84,16 @@ export class AuthService {
     return this.jwt.sign({ sub: phoneNumber });
   }
 
-  async authenticate(client: Socket): Promise<number | null>{
+  async authenticate(client: Socket): Promise<number | null> {
     const token = client.handshake.auth?.token as string | undefined;  // JWT token from client
     if (!token) {
       this.logger.warn('Client connected without token:', client.id);
       return null;
     }
     try {
-      const payload = this.jwt.verify(token.replace(/^Bearer\s/, ''));  // verify JWT
+      const payload = this.jwt.verify<{ sub: number }>(token.replace(/^Bearer\s/, ''));  // verify JWT
       return payload.sub;
-    }catch (error) {
+    } catch (error) {
       this.logger.warn('✖ bad token, disconnecting:', client.id);
       return null;
     }

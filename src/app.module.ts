@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './routing/app.controller';
+import { TestController } from './routing/test.controller';
 
 import { UserEntity } from './entities/user.entity';
 import { AddressEntity } from './entities/address.entity';
@@ -20,22 +21,24 @@ import { EventService } from './services/event.service';
 import { UserService } from './services/user.service';
 import { ChatService } from './services/chat.service';
 import { SwipeService } from './services/swipe.service';
+
 import { AuthMySQL } from './repository/authMySQL';
 import { ChatMySQL } from './repository/chatMySQL';
 import { EventMySQL } from './repository/eventMySQL';
 import { UserMySQL } from './repository/userMySQL';
+
 import { MulterModule } from '@nestjs/platform-express';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { TestController } from './routing/test.controller';
+
 import { DATABASE_URL, JWT_EXPIRES_IN} from './config/constants';  
 
 @Module({
   imports: [
 
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true }), //lädt .env-Variablen, wird das benötigt?
     
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -49,7 +52,7 @@ import { DATABASE_URL, JWT_EXPIRES_IN} from './config/constants';
         PublicEventEntity,
         FilterEntity,
       ],
-      synchronize: true,
+      synchronize: true, //in Produktionsbetrieb auf false setzen
       autoLoadEntities: true,
       ssl: { rejectUnauthorized: false },
     }),

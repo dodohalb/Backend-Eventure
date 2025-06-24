@@ -1,28 +1,29 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { User } from 'src/domainObjects/user';
 import { DAO } from 'src/repository/dao';
 import { UserMySQL } from 'src/repository/userMySQL';
 
 @Injectable()
 export class UserService {
-    private logger = new Logger(UserService.name);
-    private dao: DAO<User> = new UserMySQL(); 
+    private readonly logger = new Logger(UserService.name);
+    //private dao: DAO<User> = new UserMySQL(); 
 
+    constructor(@Inject(UserMySQL) private readonly dao: DAO<User>) {}
 
-    updateProfile(user: User): Promise<{msg: string}> {
+    async updateProfile(user: User): Promise<{msg: string}> {
         this.logger.log("updateProfile called for user:", user.name);
-        const newProfile = this.dao.update(user);
+        const newProfile = await this.dao.update(user);
         if (!newProfile) {
             this.logger.error("Failed to update profile for user:", user.name);
         }
         return Promise.resolve({msg: "Profile updated successfully"});
     }
     
-    authorizeUser(eventId: number, userId: number): Promise<{msg: string}> {
+    async authorizeUser(eventId: number, userId: number): Promise<{msg: string}> {
         this.logger.log("authorizeUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
     }
-    declineUser(eventId: number, userId: number): Promise<{msg: string}> {
+    async declineUser(eventId: number, userId: number): Promise<{msg: string}> {
         this.logger.log("declineUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
     }
