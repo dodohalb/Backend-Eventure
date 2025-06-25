@@ -4,6 +4,7 @@ import { DAO } from 'src/repository/dao';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/domainObjects/user';
 import { LoginDto } from 'src/auth/loginDto';
+import { LoginEntity } from '../entities/login.entity';
 import { AuthMySQL } from 'src/repository/authMySQL';
 import { UserMySQL } from 'src/repository/userMySQL';
 import { Socket } from 'socket.io';
@@ -24,8 +25,10 @@ export class AuthService {
   /* JwtService is injected via Nest’s DI container */
   constructor(
     private readonly jwt: JwtService,
-    @Inject(AuthMySQL) private readonly daoAuth: DAO<LoginDto>,
-    @Inject(UserMySQL) private readonly daoUser: DAO<User>,
+    //@Inject(AuthMySQL) private readonly daoAuth: DAO<LoginDto>,
+    //@Inject(UserMySQL) private readonly daoUser: DAO<User>,
+    @Inject(AuthMySQL) private readonly authRepo: AuthMySQL,
+    @Inject(UserMySQL) private readonly userRepo: UserMySQL,
   ) { }
 
 
@@ -38,19 +41,22 @@ export class AuthService {
     const hash = await bcrypt.hash(dto.password, 12);
 
     /* 2) abort if phone number already taken */
-    const dbUser = await this.daoAuth.get(dto.phoneNumber);
+    //const dbUser = await this.daoAuth.get(dto.phoneNumber);
+    const dbUser = await this.authRepo.getHashByPhone(dto.phoneNumber);
     if (dbUser)
       throw new UnauthorizedException('User already exists with this phone number');
 
     /* 3) store credentials (phone + hash) */
-    const newUser = await this.daoAuth.insert(new LoginDto(dto.phoneNumber, hash));
+    //const newUser = await this.daoAuth.insert(new LoginDto(dto.phoneNumber, hash));
+    const newUser = await this.userRepo.insert(user);
     if (!newUser)
       throw new UnauthorizedException('User registration failed');
 
     /* 4) store user profile */
-    const newUserDetails = await this.daoUser.insert(user);
-    if (!newUserDetails)
-      throw new UnauthorizedException('User details registration failed');
+    //const newUserDetails = await this.daoUser.insert(user);
+    const newUserDetails = await this.authRepo.createLogin(dto.phoneNumber, hash);
+    //if (!newUserDetails)     -->CreateLogin() hat keinen Rückgabewert, deswegen kann die If-Anweisung nicht ausgeführt werden
+    //  throw new UnauthorizedException('User details registration failed');
 
     /* 5) issue JWT */
     const token = this.sign(dto.phoneNumber);
@@ -64,23 +70,33 @@ export class AuthService {
     this.logger.log("Login attempt for phone number:", dto.phoneNumber);
 
     /* 1) fetch stored hash for this phone number */
-    const user = await this.daoAuth.get(dto.phoneNumber);
+    //const user = await this.daoAuth.get(dto.phoneNumber);
+    const storedHash = await this.authRepo.getHashByPhone(dto.phoneNumber);
+    if (!storedHash) {
+      this.logger.warn(
+        'Login failed—no credentials for',
+        dto.phoneNumber,
+      );
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     /* 2) compare plaintext password with stored hash */
-    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+    const valid = await bcrypt.compare(dto.password, storedHash);
+    //if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+    if (!valid) {
       this.logger.warn("Login attempt failed: User not found for phone number:", dto.phoneNumber);
       throw new UnauthorizedException('invalid credentials');
     }
 
     /* 3) sign and return JWT */
-    const token = this.sign(user.phoneNumber);
+    const token = this.sign(dto.phoneNumber);
     return { msg: 'logged in', token };
   }
 
 
 
   /* helper – create compact JWT payload { sub: phoneNumber } */
-  private sign(phoneNumber: number) {
+  private sign(phoneNumber: string) {
     return this.jwt.sign({ sub: phoneNumber });
   }
 

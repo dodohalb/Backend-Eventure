@@ -3,18 +3,17 @@ import { IsNumber, IsString } from 'class-validator';
 export class LoginDto {
 
 
-    @IsNumber()
-    phoneNumber: number;
+    @IsString()
+    phoneNumber: string;
     @IsString()
     password: string;
 
 
     constructor(
-        phoneNumber: number,
+        phoneNumber: string,
         password: string
     ) {
         this.phoneNumber = phoneNumber;
         this.password = password;
-        
     }
 }
