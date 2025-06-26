@@ -8,8 +8,8 @@ import { UserMapper } from 'src/mappers/user.mapper';
 import { DAO } from './dao';
 
 @Injectable()
-export class UserMySQL implements DAO<User> {
-  private readonly logger = new Logger(UserMySQL.name);
+export class UserRepo implements DAO<User> {
+  private readonly logger = new Logger(UserRepo.name);
 
   constructor(
     @InjectRepository(UserEntity)

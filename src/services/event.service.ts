@@ -3,7 +3,7 @@ import { PrivateEvent } from 'src/domainObjects/privateEvent';
 import { PublicEvent } from 'src/domainObjects/publicEvent';
 import { Event } from 'src/domainObjects/event';
 import { DAO } from 'src/repository/dao';
-import { EventMySQL } from 'src/repository/event.repo';
+import { EventRepo } from 'src/repository/event.repo';
 
 @Injectable()
 export class EventService {
@@ -13,7 +13,7 @@ export class EventService {
     /* Logger to trace service-level operations                   */
     private logger = new Logger(EventService.name);
 
-    constructor(@Inject(EventMySQL) private readonly dao: DAO<PublicEvent | PrivateEvent>) { }
+    constructor(@Inject(EventRepo) private readonly dao: DAO<PublicEvent | PrivateEvent>) { }
 
     /* Update an existing event (TODO: implement DB logic) */
     async updateEvent(file: Express.Multer.File, eventString: string): Promise<{ msg: string }> {

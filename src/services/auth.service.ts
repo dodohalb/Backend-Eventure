@@ -5,8 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/domainObjects/user';
 import { LoginDto } from 'src/auth/loginDto';
 import { LoginEntity } from '../entities/login.entity';
-import { AuthMySQL } from 'src/repository/auth.repo';
-import { UserMySQL } from 'src/repository/user.repo';
+import { AuthRepo } from 'src/repository/auth.repo';
+import { UserRepo } from 'src/repository/user.repo';
 import { Socket } from 'socket.io';
 
 @Injectable()
@@ -27,8 +27,8 @@ export class AuthService {
     private readonly jwt: JwtService,
     //@Inject(AuthMySQL) private readonly daoAuth: DAO<LoginDto>,
     //@Inject(UserMySQL) private readonly daoUser: DAO<User>,
-    @Inject(AuthMySQL) private readonly authRepo: AuthMySQL,
-    @Inject(UserMySQL) private readonly userRepo: UserMySQL,
+    @Inject(AuthRepo) private readonly authRepo: AuthRepo,
+    @Inject(UserRepo) private readonly userRepo: UserRepo,
   ) { }
 
 

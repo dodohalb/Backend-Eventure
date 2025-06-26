@@ -5,8 +5,8 @@ import { Repository } from 'typeorm';
 import { LoginEntity } from '../entities/login.entity';
 
 @Injectable()
-export class AuthMySQL {
-  private readonly logger = new Logger(AuthMySQL.name);
+export class AuthRepo {
+  private readonly logger = new Logger(AuthRepo.name);
 
   constructor(
     @InjectRepository(LoginEntity)

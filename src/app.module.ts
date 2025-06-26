@@ -25,10 +25,10 @@ import { UserService } from './services/user.service';
 import { ChatService } from './services/chat.service';
 import { SwipeService } from './services/swipe.service';
 
-import { AuthMySQL } from './repository/auth.repo';
-import { ChatMySQL } from './repository/chat.repo';
-import { EventMySQL } from './repository/event.repo';
-import { UserMySQL } from './repository/user.repo';
+import { AuthRepo } from './repository/auth.repo';
+import { ChatRepo } from './repository/chat.repo';
+import { EventRepo } from './repository/event.repo';
+import { UserRepo } from './repository/user.repo';
 
 import { MulterModule } from '@nestjs/platform-express';
 import { PassportModule } from '@nestjs/passport';
@@ -89,7 +89,7 @@ import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
   providers: [
     Gateway,
     AuthService, EventService, UserService, ChatService, SwipeService,
-    AuthMySQL, ChatMySQL, EventMySQL, UserMySQL,
+    AuthRepo, ChatRepo, EventRepo, UserRepo,
     JwtStrategy
   ]
 })
