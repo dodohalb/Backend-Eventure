@@ -5,8 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from 'src/domainObjects/user';
 import { LoginDto } from 'src/auth/loginDto';
 import { LoginEntity } from '../entities/login.entity';
-import { AuthMySQL } from 'src/repository/authMySQL';
-import { UserMySQL } from 'src/repository/userMySQL';
+import { AuthMySQL } from 'src/repository/auth.repo';
+import { UserMySQL } from 'src/repository/user.repo';
 import { Socket } from 'socket.io';
 
 @Injectable()

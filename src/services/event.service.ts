@@ -3,7 +3,7 @@ import { PrivateEvent } from 'src/domainObjects/privateEvent';
 import { PublicEvent } from 'src/domainObjects/publicEvent';
 import { Event } from 'src/domainObjects/event';
 import { DAO } from 'src/repository/dao';
-import { EventMySQL } from 'src/repository/eventMySQL';
+import { EventMySQL } from 'src/repository/event.repo';
 
 @Injectable()
 export class EventService {

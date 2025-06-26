@@ -1,7 +1,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { User } from 'src/domainObjects/user';
 import { DAO } from 'src/repository/dao';
-import { UserMySQL } from 'src/repository/userMySQL';
+import { UserMySQL } from 'src/repository/user.repo';
 
 @Injectable()
 export class UserService {

@@ -23,10 +23,10 @@ import { UserService } from './services/user.service';
 import { ChatService } from './services/chat.service';
 import { SwipeService } from './services/swipe.service';
 
-import { AuthMySQL } from './repository/authMySQL';
-import { ChatMySQL } from './repository/chatMySQL';
-import { EventMySQL } from './repository/eventMySQL';
-import { UserMySQL } from './repository/userMySQL';
+import { AuthMySQL } from './repository/auth.repo';
+import { ChatMySQL } from './repository/chat.repo';
+import { EventMySQL } from './repository/event.repo';
+import { UserMySQL } from './repository/user.repo';
 
 import { MulterModule } from '@nestjs/platform-express';
 import { PassportModule } from '@nestjs/passport';

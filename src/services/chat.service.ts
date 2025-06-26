@@ -2,7 +2,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DAO } from 'src/repository/dao';
 import { promises } from 'dns';
 import { ChatMessage } from 'src/domainObjects/chatMessage';
-import { ChatMySQL } from 'src/repository/chatMySQL';
+import { ChatMySQL } from 'src/repository/chat.repo';
 
 @Injectable()
 export class ChatService {

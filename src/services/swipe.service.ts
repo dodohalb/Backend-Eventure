@@ -2,7 +2,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DAO } from 'src/repository/dao';
 import { Filter } from 'src/domainObjects/filter';
 import { Event } from 'src/domainObjects/event';
-import { EventMySQL } from 'src/repository/eventMySQL';
+import { EventMySQL } from 'src/repository/event.repo';
 
 @Injectable()
 export class SwipeService {
