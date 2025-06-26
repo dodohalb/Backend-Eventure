@@ -15,7 +15,7 @@ export class UserEntity {
   @Column()
   age: number;
 
-  @Column()
+  @Column({ type: 'varchar', unique: true })    // ← hier UNIQUE hinzu
   phoneNumber: string;
 
   @ManyToOne(() => AddressEntity, { cascade: true, eager: true })

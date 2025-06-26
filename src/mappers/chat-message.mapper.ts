@@ -2,24 +2,28 @@
 import { ChatMessage } from 'src/domainObjects/chatMessage';
 import { ChatMessageEntity } from 'src/entities/chat_message.entity';
 import { UserMapper } from './user.mapper';
+import { PrivateEventEntity } from 'src/entities/private_event.entity';
 
 export class ChatMessageMapper {
-  static toEntity(chat: ChatMessage): ChatMessageEntity {
-    const entity = new ChatMessageEntity();
-    // ID weglassen – DB setzt die messageId selbst
-    entity.content   = chat.content;
-    entity.timestamp = chat.timestamp;
-    entity.user      = UserMapper.toEntity(chat.user);
-    return entity;
+  static toEntity(domain: ChatMessage): ChatMessageEntity {
+    const e = new ChatMessageEntity();
+    if (domain.messageId) e.id = domain.messageId;
+    e.user = UserMapper.toEntity(domain.user);
+    e.content = domain.content;
+    e.timestamp = domain.timestamp;
+    const pe = new PrivateEventEntity();
+    pe.id = domain.eventId;
+    e.event = pe;
+    return e;
   }
 
   static toDomain(entity: ChatMessageEntity): ChatMessage {
-    const chat = new ChatMessage();
-    // ID zuweisen, weil ChatMessage.messageId gefordert ist
-    chat.messageId = entity.id;
-    chat.user      = UserMapper.toDomain(entity.user);
-    chat.content   = entity.content;
-    chat.timestamp = entity.timestamp;
-    return chat;
+    const d = new ChatMessage();
+    d.messageId = entity.id;
+    d.user = UserMapper.toDomain(entity.user);
+    d.content = entity.content;
+    d.timestamp = entity.timestamp;
+    d.eventId = entity.event.id;
+    return d;
   }
 }

@@ -1,15 +1,18 @@
 import { Address } from "./address";
 import {
-  IsOptional,
-  IsString,
-  IsDate,
-  ValidateNested,
+    IsOptional,
+    IsString,
+    IsDate,
+    ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export abstract class  Event {
+export abstract class Event {
 
-    @ValidateNested()            
+    @IsOptional()
+    id?: number;
+
+    @ValidateNested()
     @Type(() => Address)
     address: Address | null;
 
@@ -28,9 +31,6 @@ export abstract class  Event {
 
     @IsString()
     type: string;
-
-    @IsOptional()
-    id: number;
 
     constructor(
         address: Address,

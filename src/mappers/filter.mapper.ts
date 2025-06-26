@@ -5,21 +5,22 @@ import { FilterEntity } from 'src/entities/filter.entity';
 export class FilterMapper {
   static toEntity(domain: Filter): FilterEntity {
     const e = new FilterEntity();
-    // kein e.id = ..., da DomainObject kein id hat
-    e.type = domain.type;
+    // domain.id? → wenn Du willst, kannst Du hier ein e.id = domain.id; ergänzen
+    e.type     = domain.type;
     e.contacts = domain.contacts;
-    e.date = domain.date;
-    e.city = domain.city;
+    e.date     = domain.date;
+    e.city     = domain.city;
     return e;
   }
 
   static toDomain(entity: FilterEntity): Filter {
-    return new Filter(
+    const d = new Filter(
       entity.type,
       entity.contacts,
       entity.date,
-      entity.city
+      entity.city,
     );
-    // id bleibt in der Domain verborgen
+    ;(d as any).id = entity.id;
+    return d;
   }
 }

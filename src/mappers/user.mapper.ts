@@ -6,6 +6,7 @@ import { AddressMapper } from './address.mapper';
 export class UserMapper {
   static toEntity(user: User): UserEntity {
     const entity = new UserEntity();
+    if (user.id) entity.id = user.id;
     entity.name = user.name;
     entity.age = user.age;
     entity.biographie = user.biographie;
@@ -15,12 +16,14 @@ export class UserMapper {
   }
 
   static toDomain(entity: UserEntity): User {
-    return {
-      name: entity.name,
-      age: entity.age,
-      biographie: entity.biographie,
-      phoneNumber: entity.phoneNumber,
-      address: AddressMapper.toDomain(entity.address),
-    };
-  }
-}
+    const d = new User(
+      entity.name,
+      entity.biographie,
+      entity.age,
+      entity.phoneNumber,
+      AddressMapper.toDomain(entity.address),
+    );
+    d.id = entity.id;
+    return d;
+  };
+};

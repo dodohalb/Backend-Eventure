@@ -1,4 +1,4 @@
-import { IsDate, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsDate, IsOptional, IsString, ValidateNested, IsNumber } from "class-validator";
 import { User } from "./user";
 import { Type } from "class-transformer";
 
@@ -19,6 +19,8 @@ export class ChatMessage {
     @IsDate()
     timestamp: Date;
 
-    
-    constructor(){}
+    @IsNumber()
+    eventId: number;
+
+    constructor() { }
 }

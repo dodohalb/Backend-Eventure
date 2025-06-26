@@ -18,12 +18,7 @@ export class PrivateEventEntity extends EventEntity {
   @OneToMany(() => ChatMessageEntity, (chat) => chat.user, { cascade: true })
   chat: ChatMessageEntity[];
 
-  @Column()
-  maxMembers: number;
-
-  @Column()
-  visibility: boolean;
-
-  @Column()
-  authorization: boolean;
+  @Column() maxMembers: number;
+  @Column() visibility: boolean;
+  @Column() authorization: boolean;
 }

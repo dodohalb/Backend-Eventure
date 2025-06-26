@@ -1,6 +1,9 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsString, IsOptional } from "class-validator";
 
 export class Address {
+
+    @IsOptional()
+    id?: number;
 
     @IsString()
     street: string;
@@ -11,9 +14,9 @@ export class Address {
     @IsNumber()
     postalCode: number;
 
-    @IsString() 
+    @IsString()
     city: string;
-    
+
     constructor(
         street: string,
         number: string,
@@ -24,6 +27,6 @@ export class Address {
         this.number = number;
         this.postalCode = postalCode;
         this.city = city;
-        
+
     }
 }

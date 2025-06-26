@@ -1,13 +1,16 @@
-import { IsArray, IsDate, IsNumber, IsString } from "class-validator";
+import { IsArray, IsDate, IsNumber, IsString, IsOptional } from "class-validator";
 
 export class Filter {
+
+    @IsOptional()
+    id?: number;
 
     @IsString()
     type: string;
 
     @IsArray()
     @IsNumber({}, { each: true })
-    contacts:number[];
+    contacts: number[];
 
     @IsDate()
     date: Date;
@@ -26,6 +29,6 @@ export class Filter {
         this.contacts = contacts;
         this.date = date;
         this.city = city;
-        
+
     }
 }

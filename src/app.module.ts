@@ -34,13 +34,13 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-import { DATABASE_URL, JWT_EXPIRES_IN} from './config/constants';  
+import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
 
 @Module({
   imports: [
 
     ConfigModule.forRoot({ isGlobal: true }), //lädt .env-Variablen, wird das benötigt?
-    
+
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: DATABASE_URL,
@@ -56,31 +56,30 @@ import { DATABASE_URL, JWT_EXPIRES_IN} from './config/constants';
       ],
       synchronize: true, //in Produktionsbetrieb auf false setzen
       autoLoadEntities: true,
-      ssl: { rejectUnauthorized: false },
     }),
 
-    TypeOrmModule.forFeature([
-      UserEntity,
-      AddressEntity,
-      ChatMessageEntity,
-      PrivateEventEntity,
-      PublicEventEntity,
-      FilterEntity,
-      LoginEntity,
-    ]),
-    
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-      serveRoot: '/static',
-    }),
-    MulterModule.register({
-      limits: { fileSize: 10 * 1024 * 1024 }   // 10 MB
-    }),
-    PassportModule,
-    JwtModule.register({
-      secret: "secret-key",
-      signOptions: { expiresIn: JWT_EXPIRES_IN || '1d' },
-    })
+  TypeOrmModule.forFeature([
+    UserEntity,
+    AddressEntity,
+    ChatMessageEntity,
+    PrivateEventEntity,
+    PublicEventEntity,
+    FilterEntity,
+    LoginEntity,
+  ]),
+
+  ServeStaticModule.forRoot({
+    rootPath: join(__dirname, '..', 'public'),
+    serveRoot: '/static',
+  }),
+  MulterModule.register({
+    limits: { fileSize: 10 * 1024 * 1024 }   // 10 MB
+  }),
+  PassportModule,
+  JwtModule.register({
+    secret: "secret-key",
+    signOptions: { expiresIn: JWT_EXPIRES_IN || '1d' },
+  })
   ],
   controllers: [AppController, TestController],
   providers: [

@@ -4,6 +4,7 @@ import { Type } from "class-transformer";
 
 export class User {
     
+    id?: number;
 
     @IsString()
     name: string;

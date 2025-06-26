@@ -27,6 +27,4 @@ export class UserService {
         this.logger.log("declineUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
     }
-
-
 }

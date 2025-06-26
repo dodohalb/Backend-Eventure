@@ -1,0 +1,17 @@
+#version: '3.8'                  # Schema-Version für docker-compose
+services:
+  db:                          # Dienst-Name: "db"
+    image: postgres:15         # Basis-Image: offizielles PostgreSQL 15
+    container_name: eventure-postgres-dev  
+    environment:               # Umgebungs-Variablen im Container
+      POSTGRES_USER: postgres       # Default-DB-User
+      POSTGRES_PASSWORD: devpass    # Default-Passwort
+      POSTGRES_DB: eventure_dev     # Default-Datenbankname
+    ports:
+      - "5432:5432"            # Host-Port:Container-Port, damit ihr von localhost:5432 drauf könnt
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
+                               # Persistentes Volume, damit eure Daten zwischen Neustarts erhalten bleiben
+
+volumes:
+  postgres_data:               # Deklariert das Volume oben

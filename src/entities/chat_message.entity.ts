@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
+import { PrivateEventEntity } from './private_event.entity';
 
 @Entity()
 export class ChatMessageEntity {
@@ -8,6 +9,9 @@ export class ChatMessageEntity {
 
   @ManyToOne(() => UserEntity, { eager: true })
   user: UserEntity;
+
+  @ManyToOne(() => PrivateEventEntity, event => event.chat, { onDelete: 'CASCADE' })
+  event: PrivateEventEntity;
 
   @Column()
   content: string;
