@@ -10,7 +10,6 @@ export class PublicEventMapper {
     e.name                          = domain.name;
     e.description                   = domain.description;
     e.date                          = domain.date;
-    e.type                          = domain.type;
     e.picture                       = domain.picture;
     if (domain.address) {
       e.address                     = AddressMapper.toEntity(domain.address);
@@ -25,7 +24,7 @@ export class PublicEventMapper {
       entity.name,
       entity.description,
       entity.date,
-      entity.type,
+      'public',
     );
     d.id = entity.id;
     return d;

@@ -16,6 +16,8 @@ import { PrivateEventEntity } from './entities/private_event.entity';
 import { PublicEventEntity } from './entities/public_event.entity';
 import { FilterEntity } from './entities/filter.entity';
 import { LoginEntity } from './entities/login.entity';
+import { InteractionEntity } from './entities/interaction.entity';
+
 
 import { AuthService } from './services/auth.service';
 import { EventService } from './services/event.service';
@@ -53,6 +55,7 @@ import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
         PublicEventEntity,
         FilterEntity,
         LoginEntity,
+        InteractionEntity,
       ],
       synchronize: true, //in Produktionsbetrieb auf false setzen
       autoLoadEntities: true,
@@ -66,6 +69,7 @@ import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
     PublicEventEntity,
     FilterEntity,
     LoginEntity,
+    InteractionEntity,
   ]),
 
   ServeStaticModule.forRoot({

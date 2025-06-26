@@ -1,5 +1,8 @@
-import { Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, ManyToOne, PrimaryGeneratedColumn, Entity, TableInheritance } from 'typeorm';
 import { AddressEntity } from './address.entity';
+
+@Entity({ name: 'event_entity' })
+@TableInheritance({ column: { name: 'type', type: 'varchar', }, pattern: 'STI', })
 
 export abstract class EventEntity {
   @PrimaryGeneratedColumn()
@@ -14,8 +17,9 @@ export abstract class EventEntity {
   @Column()
   date: Date;
 
-  @Column()
-  type: string;
+  // wir entfernen hier die eigene @Column()-Deklaration von `type`, weil TableInheritance schon die Discriminator-Spalte anlegt:
+  // @Column()
+  // type: string;
 
   @Column({ type: 'bytea', nullable: true }) // falls PostgreSQL
   picture: Buffer | null;

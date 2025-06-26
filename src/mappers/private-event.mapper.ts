@@ -12,7 +12,6 @@ export class PrivateEventMapper {
     e.name                          = domain.name;
     e.description                   = domain.description;
     e.date                          = domain.date;
-    e.type                          = domain.type;
     e.picture                       = domain.picture;
     e.maxMembers                    = domain.maxMembers;
     e.visibility                    = domain.visibility;
@@ -32,7 +31,7 @@ export class PrivateEventMapper {
       entity.name,
       entity.description,
       entity.date,
-      entity.type,
+      'private',
     );
     d.id            = entity.id;
     d.maxMembers    = entity.maxMembers;

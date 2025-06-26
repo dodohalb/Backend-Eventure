@@ -3,13 +3,13 @@ import {
   Column,
   OneToMany,
   ManyToMany,
-  JoinTable
+  JoinTable, ChildEntity
 } from 'typeorm';
 import { EventEntity } from './event.entity';
 import { UserEntity } from './user.entity';
 import { ChatMessageEntity } from './chat_message.entity';
 
-@Entity()
+@ChildEntity('private') 
 export class PrivateEventEntity extends EventEntity {
   @ManyToMany(() => UserEntity, { cascade: true, eager: true })
   @JoinTable()
