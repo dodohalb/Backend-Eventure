@@ -1,14 +1,14 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { User } from 'src/domainObjects/user';
 import { DAO } from 'src/repository/dao';
-import { UserMySQL } from 'src/repository/user.repo';
+import { UserRepo } from 'src/repository/user.repo';
 
 @Injectable()
 export class UserService {
     private readonly logger = new Logger(UserService.name);
     //private dao: DAO<User> = new UserMySQL(); 
 
-    constructor(@Inject(UserMySQL) private readonly dao: DAO<User>) {}
+    constructor(@Inject(UserRepo) private readonly dao: DAO<User>) {}
 
     async updateProfile(user: User): Promise<{msg: string}> {
         this.logger.log("updateProfile called for user:", user.name);

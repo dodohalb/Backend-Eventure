@@ -2,14 +2,14 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { DAO } from 'src/repository/dao';
 import { promises } from 'dns';
 import { ChatMessage } from 'src/domainObjects/chatMessage';
-import { ChatMySQL } from 'src/repository/chat.repo';
+import { ChatRepo } from 'src/repository/chat.repo';
 
 @Injectable()
 export class ChatService {
 
   private readonly logger = new Logger(ChatService.name);
 
-  constructor(@Inject(ChatMySQL) private readonly dao: DAO<ChatMessage>) { }
+  constructor(@Inject(ChatRepo) private readonly dao: DAO<ChatMessage>) { }
 
   async sendMessage(chatMessage: ChatMessage, eventId: number): Promise<ChatMessage> {
     this.logger.log(`sendMessage called for event ${eventId}`);

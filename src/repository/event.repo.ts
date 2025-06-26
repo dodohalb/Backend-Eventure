@@ -10,8 +10,8 @@ import { PublicEventMapper } from '../mappers/public-event.mapper';
 import { PrivateEventMapper } from '../mappers/private-event.mapper';
 
 @Injectable()
-export class EventMySQL implements DAO<PublicEvent | PrivateEvent> {
-  private readonly logger = new Logger(EventMySQL.name);
+export class EventRepo implements DAO<PublicEvent | PrivateEvent> {
+  private readonly logger = new Logger(EventRepo.name);
 
   constructor(
     @InjectRepository(PublicEventEntity)

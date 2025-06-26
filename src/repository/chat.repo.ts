@@ -7,8 +7,8 @@ import { ChatMessage } from '../domainObjects/chatMessage';
 import { ChatMessageMapper } from '../mappers/chat-message.mapper';
 
 @Injectable()
-export class ChatMySQL implements DAO<ChatMessage> {
-  private readonly logger = new Logger(ChatMySQL.name);
+export class ChatRepo implements DAO<ChatMessage> {
+  private readonly logger = new Logger(ChatRepo.name);
 
   constructor(
     @InjectRepository(ChatMessageEntity)
