@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DAO } from './dao';
+import { Event } from '../domainObjects/event';
 import { PublicEvent } from '../domainObjects/publicEvent';
 import { PrivateEvent } from '../domainObjects/privateEvent';
 import { PublicEventEntity } from '../entities/public_event.entity';
@@ -10,7 +11,7 @@ import { PublicEventMapper } from '../mappers/public-event.mapper';
 import { PrivateEventMapper } from '../mappers/private-event.mapper';
 
 @Injectable()
-export class EventRepo implements DAO<PublicEvent | PrivateEvent> {
+export class EventRepo implements DAO<Event> {
   private readonly logger = new Logger(EventRepo.name);
 
   constructor(
@@ -21,7 +22,7 @@ export class EventRepo implements DAO<PublicEvent | PrivateEvent> {
   ) {}
 
   /** Liefert PublicEvent oder PrivateEvent je nach gefundenem Entity */
-  async get(id: number): Promise<PublicEvent | PrivateEvent> {
+  async get(id: number): Promise<Event> {
     const pe = await this.publicRepo.findOne({ where: { id } });
     if (pe) {
       this.logger.log(`Loaded PublicEvent ${id}`);
@@ -36,14 +37,14 @@ export class EventRepo implements DAO<PublicEvent | PrivateEvent> {
   }
 
   /** Erzeugt ein neues Event, je nach Instanztyp */
-  async insert(obj: PublicEvent | PrivateEvent): Promise<PublicEvent | PrivateEvent> {
+  async insert(obj: Event): Promise<Event> {
     if (obj instanceof PublicEvent) {
       const e = PublicEventMapper.toEntity(obj);
       const saved = await this.publicRepo.save(e);
       this.logger.log(`Inserted PublicEvent ${saved.id}`);
       return PublicEventMapper.toDomain(saved);
     } else {
-      const e = PrivateEventMapper.toEntity(obj);
+      const e = PrivateEventMapper.toEntity(obj as PrivateEvent);
       const saved = await this.privateRepo.save(e);
       this.logger.log(`Inserted PrivateEvent ${saved.id}`);
       return PrivateEventMapper.toDomain(saved);
@@ -51,14 +52,14 @@ export class EventRepo implements DAO<PublicEvent | PrivateEvent> {
   }
 
   /** Überschreibt ein existierendes Event */
-  async update(obj: PublicEvent | PrivateEvent): Promise<PublicEvent | PrivateEvent> {
+  async update(obj: Event): Promise<Event> {
     if (obj instanceof PublicEvent) {
       const e = PublicEventMapper.toEntity(obj);
       const saved = await this.publicRepo.save(e);
       this.logger.log(`Updated PublicEvent ${saved.id}`);
       return PublicEventMapper.toDomain(saved);
     } else {
-      const e = PrivateEventMapper.toEntity(obj);
+      const e = PrivateEventMapper.toEntity(obj as PrivateEvent);
       const saved = await this.privateRepo.save(e);
       this.logger.log(`Updated PrivateEvent ${saved.id}`);
       return PrivateEventMapper.toDomain(saved);
@@ -66,7 +67,7 @@ export class EventRepo implements DAO<PublicEvent | PrivateEvent> {
   }
 
   /** Löscht ein Event anhand der ID */
-  async delete(id: number): Promise<PublicEvent | PrivateEvent> {
+  async delete(id: number): Promise<Event> {
     try {
       const pe = await this.publicRepo.findOneBy({ id });
       if (pe) {
