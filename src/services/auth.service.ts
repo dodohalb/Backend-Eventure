@@ -100,14 +100,14 @@ export class AuthService {
     return this.jwt.sign({ sub: phoneNumber });
   }
 
-  async authenticate(client: Socket): Promise<number | null> {
+  async authenticate(client: Socket): Promise<string | null> {
     const token = client.handshake.auth?.token as string | undefined;  // JWT token from client
     if (!token) {
       this.logger.warn('Client connected without token:', client.id);
       return null;
     }
     try {
-      const payload = this.jwt.verify<{ sub: number }>(token.replace(/^Bearer\s/, ''));  // verify JWT
+      const payload = this.jwt.verify<{ sub: string }>(token.replace(/^Bearer\s/, ''));  // verify JWT
       return payload.sub;
     } catch (error) {
       this.logger.warn('✖ bad token, disconnecting:', client.id);

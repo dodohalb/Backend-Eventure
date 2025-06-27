@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+
 import { Gateway } from './routing/app.gateway';
 import { JwtModule } from '@nestjs/jwt';
-
+import { Server } from 'socket.io';
+import { forwardRef, Module } from '@nestjs/common'; 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 
@@ -22,7 +23,7 @@ import { InteractionEntity } from './entities/interaction.entity';
 import { AuthService } from './services/auth.service';
 import { EventService } from './services/event.service';
 import { UserService } from './services/user.service';
-import { ChatService } from './services/chat.service';
+import { MessageService } from './services/message.service';
 import { SwipeService } from './services/swipe.service';
 
 import { AuthRepo } from './repository/auth.repo';
@@ -37,6 +38,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
 import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
+import { PresenceService } from './services/presenceService';
+import { PushService } from './services/push.Service';
 
 @Module({
   imports: [
@@ -88,9 +91,9 @@ import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
   controllers: [AppController, TestController],
   providers: [
     Gateway,
-    AuthService, EventService, UserService, ChatService, SwipeService,
+    AuthService, EventService, UserService, MessageService, SwipeService, PresenceService, PushService,
     AuthRepo, ChatRepo, EventRepo, UserRepo,
-    JwtStrategy
+    JwtStrategy,
   ]
 })
 export class AppModule { }

@@ -11,7 +11,7 @@ import {
 
 import { EventService }   from '../services/event.service';
 import { UserService }    from '../services/user.service';
-import { ChatService }    from '../services/chat.service';
+import { MessageService }    from '../services/message.service';
 import { SwipeService }   from '../services/swipe.service';
 import { AuthService }    from '../services/auth.service';
 
@@ -37,7 +37,7 @@ export class AppController {
     /* Inject all business-layer services */
     private readonly eventService: EventService,
     private readonly userService:  UserService,
-    private readonly chatService:  ChatService,
+    private readonly messageService:  MessageService,
     private readonly swipeService: SwipeService,
     private readonly authService:  AuthService,
 
@@ -106,6 +106,7 @@ export class AppController {
   @Post('create-event')
   @UseInterceptors(FileInterceptor('picture'))   // Multer: extract file-part
   async createEvent(@UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string; event: Event }> {
+    this.logger.log(`Creating event with data: ${eventString}`);
     return this.eventService.createEvent(file, eventString);
   }
 
