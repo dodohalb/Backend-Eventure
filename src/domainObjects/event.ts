@@ -6,6 +6,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { User } from "./user";
 
 export abstract class Event {
 
@@ -47,5 +48,8 @@ export abstract class Event {
         this.date = date;
         this.type = type;
     }
+
+    abstract getUsers():User[];
+    
 
 }
