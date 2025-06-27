@@ -1,9 +1,11 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, NotFoundException } from '@nestjs/common';
 import { PrivateEvent } from 'src/domainObjects/privateEvent';
 import { PublicEvent } from 'src/domainObjects/publicEvent';
 import { Event } from 'src/domainObjects/event';
 import { DAO } from 'src/repository/dao';
 import { EventRepo } from 'src/repository/event.repo';
+import { UserRepo } from 'src/repository/user.repo';
+import { User } from 'src/domainObjects/user';
 
 @Injectable()
 export class EventService {
@@ -13,7 +15,11 @@ export class EventService {
     /* Logger to trace service-level operations                   */
     private logger = new Logger(EventService.name);
 
-    constructor(@Inject(EventRepo) private readonly dao: DAO<PublicEvent | PrivateEvent>) { }
+    constructor(
+        @Inject(EventRepo) private readonly dao: DAO<PublicEvent | PrivateEvent>,
+        private readonly eventRepo: EventRepo,
+        private readonly userRepo: UserRepo,
+    ) { }
 
     /* Update an existing event (TODO: implement DB logic) */
     async updateEvent(file: Express.Multer.File, eventString: string): Promise<{ msg: string }> {
@@ -33,7 +39,6 @@ export class EventService {
      *  Returns     : confirmation + the entity saved by the DAO
      * ------------------------------------------------------------------ */
     async createEvent(file: Express.Multer.File, eventString: string): Promise<{ msg: string; event: Event }> {
-
         /* 1) Convert incoming JSON string to Event instance */
         const event = JSON.parse(eventString) as Event;
 
@@ -63,6 +68,49 @@ export class EventService {
         await this.dao.delete(id);
         this.logger.log('deleteEvent called for id:', id);
         return { msg: 'Event deleted successfully' };
+    }
+
+
+    async authorizeUser(eventId: number, userId: number): Promise<{ msg: string }> {
+        this.logger.log(`authorizeUser called with eventId=${eventId}, userId=${userId}`);
+
+        // 1) Lade das PrivateEvent
+        const event = await this.eventRepo.get(eventId) as PrivateEvent;
+        if (!event) throw new NotFoundException(`Event ${eventId} nicht gefunden`);
+
+        // 2) Lade den User
+        const user = await this.userRepo.get(userId);
+        if (!user) throw new NotFoundException(`User ${userId} nicht gefunden`);
+
+        // 3) Füge ihn der Liste der bestätigten Teilnehmer hinzu
+        event.addUser(user);
+
+        // 4) Persistiere Update
+        await this.eventRepo.update(event);
+
+        return { msg: `User ${userId} wurde autorisiert` };
+    }
+
+    async declineUser(eventId: number, userId: number): Promise<{ msg: string }> {
+        this.logger.log(`declineUser called with eventId=${eventId}, userId=${userId}`);
+
+        // 1) Lade das PrivateEvent
+        const event = await this.eventRepo.get(eventId) as PrivateEvent;
+        if (!event) throw new NotFoundException(`Event ${eventId} nicht gefunden`);
+
+        // 2) Lade den User
+        const user = await this.userRepo.get(userId);
+        if (!user) {
+            throw new NotFoundException(`User ${userId} nicht gefunden`);
+        }
+
+        // 3) Entferne den User über das ganze Domain-Objekt
+        event.removeUser(user);
+
+        // 4) Persistiere das Update
+        await this.eventRepo.update(event);
+
+        return { msg: `User ${userId} wurde abgelehnt` };
     }
 
 

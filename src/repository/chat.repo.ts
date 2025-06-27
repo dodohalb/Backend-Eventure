@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { DAO } from './dao';
 import { ChatMessageEntity } from '../entities/chat_message.entity';
 import { ChatMessage } from '../domainObjects/chatMessage';
@@ -13,7 +13,7 @@ export class ChatRepo implements DAO<ChatMessage> {
   constructor(
     @InjectRepository(ChatMessageEntity)
     private readonly repo: Repository<ChatMessageEntity>,
-  ) {}
+  ) { }
 
   async get(id: number): Promise<ChatMessage> {
     const e = await this.repo.findOneBy({ id });
@@ -42,4 +42,22 @@ export class ChatRepo implements DAO<ChatMessage> {
     this.logger.log(`Deleted ChatMessage ${id}`);
     return ChatMessageMapper.toDomain(e);
   }
+
+  async getMessagesAfter(eventId: number, after: Date): Promise<ChatMessage[]> {
+    this.logger.log(
+      `Lade neue Nachrichten für Event ${eventId} nach ${after.toISOString()}`,
+    );
+
+    const entities = await this.repo.find({
+      where: {
+        event: { id: eventId },     // auf geschachtelte Event‐ID filtern
+        timestamp: MoreThan(after),  // nach dem Datum
+      },
+      order: { timestamp: 'ASC' },   // chronologisch sortiert
+      relations: ['user', 'event'],  // damit Mapper User und Event hat
+    });
+
+    return entities.map(e => ChatMessageMapper.toDomain(e));
+  }
+
 }

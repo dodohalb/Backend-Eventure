@@ -19,6 +19,8 @@ export class UserService {
         return Promise.resolve({msg: "Profile updated successfully"});
     }
     
+    /*  Methoden nach event.service verschoben
+    
     async authorizeUser(eventId: number, userId: number): Promise<{msg: string}> {
         this.logger.log("authorizeUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
@@ -26,5 +28,5 @@ export class UserService {
     async declineUser(eventId: number, userId: number): Promise<{msg: string}> {
         this.logger.log("declineUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
-    }
+    }*/
 }
