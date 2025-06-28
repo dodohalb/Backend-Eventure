@@ -1,6 +1,21 @@
-export interface DAO<T> {
-  get(id: number): Promise<T>;
-  insert(obj: T): Promise<T>;
-  update(obj: T): Promise<T>;
-  delete(id: number): Promise<T>;
+import { FindOptionsOrder, FindOptionsWhere } from "typeorm";
+
+export interface DAO<D, E = D> {
+  get(id: number): Promise<D>;
+  getAll(D): Promise<D[]>;
+  insert(obj: D): Promise<D>;
+  update(obj: D): Promise<D>;
+  delete(id: number): Promise<D>;
+  
+  
+  findOne(where: FindOptionsWhere<E>, opts?: {
+      order?: FindOptionsOrder<E>;
+      relations?: string[];
+    }): Promise<D | null>;
+  
+  
+    findMany(where: FindOptionsWhere<E>, opts?: {
+      order?: FindOptionsOrder<E>;
+      relations?: string[];
+    }): Promise<D[]>;
 }

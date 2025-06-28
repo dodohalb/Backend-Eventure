@@ -2,7 +2,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
 import { DAO } from './dao';
 import { InteractionEntity } from '../entities/interaction.entity';
 import { Interaction } from '../domainObjects/interaction';
@@ -14,6 +14,15 @@ export class InteractionRepo implements DAO<Interaction> {
     @InjectRepository(InteractionEntity)
     private readonly repo: Repository<InteractionEntity>,
   ) { }
+  findOne(where: FindOptionsWhere<Interaction>, opts?: {order?: FindOptionsOrder<Interaction>; relations?: string[];}): Promise<Interaction | null> {
+    throw new Error('Method not implemented.');
+  }
+  findMany(where: FindOptionsWhere<Interaction>,opts?: {order?: FindOptionsOrder<Interaction>; relations?: string[];}): Promise<Interaction[]> {
+    throw new Error('Method not implemented.');
+  }
+  getAll(T: any): Promise<Interaction[]> {
+    throw new Error('Method not implemented.');
+  }
 
   /** 1) get: muss Promise<Interaction> liefern, also Exception statt null */
   async get(id: number): Promise<Interaction> {

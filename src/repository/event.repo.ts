@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
 import { DAO } from './dao';
 import { Event } from '../domainObjects/event';
 import { PublicEvent } from '../domainObjects/publicEvent';
@@ -20,6 +20,23 @@ export class EventRepo implements DAO<Event> {
     @InjectRepository(PrivateEventEntity)
     private readonly privateRepo: Repository<PrivateEventEntity>,
   ) {}
+  findOne(where: FindOptionsWhere<Event>, opts?: {order?: FindOptionsOrder<Event>; relations?: string[];}): Promise<Event | null> {
+    throw new Error('Method not implemented.');
+  }
+  findMany(where: FindOptionsWhere<Event>,opts?: {order?: FindOptionsOrder<Event>; relations?: string[];}): Promise<Event[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getAll(userId: number): Promise<Event[]> {
+    this.logger.log(`Loading all events for user ${userId}`);
+    const data = await this.privateRepo.find({ where: { users: { id: userId } } });
+    if (data.length > 0) {
+      const events = data.map((e) => PrivateEventMapper.toDomain(e));
+      return events;
+    }
+    this.logger.log(`No private events found for user ${userId}`);
+    return  [];
+  }
 
   /** Liefert PublicEvent oder PrivateEvent je nach gefundenem Entity */
   async get(id: number): Promise<Event> {

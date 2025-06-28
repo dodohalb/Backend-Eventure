@@ -1,7 +1,7 @@
 // src/repository/userMySQL.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from 'src/domainObjects/user';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserMapper } from 'src/mappers/user.mapper';
@@ -15,6 +15,23 @@ export class UserRepo implements DAO<User> {
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,
   ) {}
+  findOne(where: FindOptionsWhere<User>,opts?: {order?: FindOptionsOrder<User>; relations?: string[];}): Promise<User | null> {
+    throw new Error('Method not implemented.');
+  }
+  findMany(where: FindOptionsWhere<User>,opts?: {order?: FindOptionsOrder<User>; relations?: string[];}): Promise<User[]> {
+    throw new Error('Method not implemented.');
+  }
+  getAll(T: any): Promise<User[]> {
+    throw new Error('Method not implemented.');
+  }
+  async getUserByPhone(phone: string): Promise<User> {
+    const row = await this.repo.findOne({ where: { phoneNumber: phone } });
+    if (row) {
+      const user = UserMapper.toDomain(row);
+      return user;
+    }
+    throw new Error(`User with phone ${phone} not found`);
+  }
 
   async get(id: number): Promise<User> {
     const e = await this.repo.findOneBy({ id });
