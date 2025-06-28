@@ -9,6 +9,9 @@ import { PresenceService } from './presenceService';
 import { PushService } from './push.Service';
 import { forwardRef } from '@nestjs/common';
 import { Gateway } from '../routing/app.gateway';  
+import { MoreThan } from 'typeorm';
+import { after } from 'node:test';
+import { ChatMessageEntity } from 'src/entities/chat_message.entity';
 
 
 @Injectable()
@@ -19,7 +22,8 @@ export class MessageService {
 
   constructor(
       @Inject(EventRepo) private readonly eventRepo: DAO<Event>,
-      @Inject(ChatRepo) private readonly chatRepo: DAO<ChatMessage>,
+      @Inject(ChatRepo) private readonly chatRepo: DAO<ChatMessage,ChatMessageEntity >,
+
       private readonly presenceService: PresenceService,
       private readonly pushService: PushService,
       @Inject(forwardRef(() => Gateway))
@@ -56,14 +60,29 @@ export class MessageService {
 
     this.logger.log(
       `msg ${saved.messageId} → online ${online.length}, offline ${offline.length}`,
-    );
-
-
-    
+    );    
   }
   
   
+  async getUnreadMessages(timestamp: Date, userId: number): Promise<ChatMessage[]> {
+    // 1) get all Events from User
+    const events = await this.eventRepo.getAll(userId);
+    if (!events) {
+      this.logger.warn(`No events found for user ${userId}`);
+      return [];
+    }
+    // 2) get all Messages from Events after timestamp
+    var allMessages: ChatMessage[] = [];
+    for (const event of events) {
+      const messages = await this.chatRepo.findMany(
+        { event: { id: event.id }, timestamp: MoreThan(timestamp) }, 
+        { order: { timestamp: 'ASC' }, relations: ['user', 'event'] }, 
+      );
+      allMessages = allMessages.concat(messages);
+    }
 
+    return allMessages;
+  }
 
 
  

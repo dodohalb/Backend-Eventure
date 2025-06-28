@@ -16,6 +16,7 @@ import { SwipeService }   from '../services/swipe.service';
 import { AuthService }    from '../services/auth.service';
 
 import { JwtAuthGuard }   from '../auth/jwt-auth.guard';
+import { ChatMessage }    from '../domainObjects/chatMessage';
 
 import { Event }          from '../domainObjects/event';
 import { User }           from '../domainObjects/user';
@@ -26,6 +27,7 @@ import type { Express }    from 'express';
 
 import { LoginDto }        from '../auth/loginDto';
 import { Gateway } from './app.gateway';
+import { timestamp } from 'rxjs';
 
 @Controller()
 export class AppController {
@@ -49,13 +51,13 @@ export class AppController {
 
   /** Login with phone + password → returns JWT token */
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<{ msg: string; token: string }> {
+  async login(@Body() loginDto: LoginDto): Promise<{ msg: string; token: string; user: User }> {
     return this.authService.login(loginDto);
   }
 
   /** Register new user (credentials + profile) → returns JWT on success */
   @Post('register')
-  async register(@Body('user') user: User,@Body('password') password: string,): Promise<{ msg: string; token: string }> {
+  async register(@Body('user') user: User,@Body('password') password: string,): Promise<{ msg: string; token: string; userID: number }> {
     return this.authService.register(new LoginDto(user.phoneNumber, password), user);
   }
 
@@ -115,6 +117,12 @@ export class AppController {
   @Post('get-events')
   async getEvents(@Body('filter') filter: Filter, @Body('phoneNumber') phoneNumber: number): Promise<Event[]> {
     return this.swipeService.getEvents(filter, phoneNumber);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('unread-messages')
+  async getUnreadMessages(@Body('lastSeen')timestamp: Date, @Body('userId') userId: number): Promise<ChatMessage[]>{
+    return this.messageService.getUnreadMessages(timestamp, userId);
   }
 
   
