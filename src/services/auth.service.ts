@@ -34,7 +34,7 @@ export class AuthService {
 
 
   /* -----------------------------  REGISTER  ----------------------------- */
-  async register(dto: LoginDto, user: User): Promise<{ msg: string, token: string }> {
+  async register(dto: LoginDto, user: User): Promise<{ msg: string, token: string, userID: number }> {
     this.logger.log("Registering user:", user.name);
 
     /* 1) hash plaintext password with salt rounds = 12 */
@@ -49,7 +49,7 @@ export class AuthService {
     /* 3) store credentials (phone + hash) */
     //const newUser = await this.daoAuth.insert(new LoginDto(dto.phoneNumber, hash));
     const newUser = await this.userRepo.insert(user);
-    if (!newUser)
+    if (!newUser || !newUser.id)
       throw new UnauthorizedException('User registration failed');
 
     /* 4) store user profile */
@@ -60,13 +60,13 @@ export class AuthService {
 
     /* 5) issue JWT */
     const token = this.sign(dto.phoneNumber);
-    return { msg: "User registered successfully", token };
+    return { msg: "User registered successfully", token: token, userID: newUser.id };
   }
 
 
 
   /* -------------------------------  LOGIN  ------------------------------- */
-  async login(dto: LoginDto): Promise<{ msg: string, token: string }> {
+  async login(dto: LoginDto): Promise<{ msg: string, token: string, user: User }> {
     this.logger.log("Login attempt for phone number:", dto.phoneNumber);
 
     /* 1) fetch stored hash for this phone number */
@@ -90,7 +90,14 @@ export class AuthService {
 
     /* 3) sign and return JWT */
     const token = this.sign(dto.phoneNumber);
-    return { msg: 'logged in', token };
+
+    // 4) load User Profile
+    const user = await this.userRepo.getUserByPhone(dto.phoneNumber);
+    if(!user) {
+      this.logger.warn("Login attempt failed: User profile not found for phone number:", dto.phoneNumber);
+    }
+
+    return { msg: 'logged in', token: token, user: user };
   }
 
 
