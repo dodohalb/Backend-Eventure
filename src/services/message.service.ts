@@ -37,19 +37,20 @@ export class MessageService {
     const saved = await this.chatRepo.insert(chatMessage); 
 
     // 2) Empfängerliste Laden
-    const receivers = (await this.eventRepo.get(chatMessage.eventId))?.getUsers().map(user => user.phoneNumber)??[];
+    const event = await this.eventRepo.get(chatMessage.eventId);
+    const receivers = event.getUsers().map(user => user.id)??[];
 
     // 3) trennen in online | offline
-    const online  : string[] = [];
-    const offline : string[] = [];
+    const online  : number[] = [];
+    const offline : number[] = [];
 
     for (const receiver of receivers) {
-      (this.presenceService.isOnline(receiver) ? online : offline).push(receiver);
+      if (receiver && receiver !== chatMessage.user.id )  (this.presenceService.isOnline(receiver) ? online : offline).push(receiver);
     }
 
     // 4) live senden
-    for (const phone of online) {
-      this.gateway.server.to(phone).emit('newMessage', saved);
+    for (const userId of online) {
+      this.gateway.server.to(userId.toString()).emit('newMessage', saved);
     }
 
     //todo: benachrichte Offline recievers für GET unread Messages

@@ -40,6 +40,9 @@ import { join } from 'path';
 import { DATABASE_URL, JWT_EXPIRES_IN } from './config/constants';
 import { PresenceService } from './services/presenceService';
 import { PushService } from './services/push.Service';
+import { FirebaseProvider } from './routing/firebase.provider';
+import { DeviceTokenRepo } from './repository/deviceToken.repo';
+import { DeviceTokenEntity } from './entities/deviceToken.entity';
 
 @Module({
   imports: [
@@ -73,6 +76,7 @@ import { PushService } from './services/push.Service';
     FilterEntity,
     LoginEntity,
     InteractionEntity,
+    DeviceTokenEntity
   ]),
 
   ServeStaticModule.forRoot({
@@ -90,9 +94,10 @@ import { PushService } from './services/push.Service';
   ],
   controllers: [AppController, TestController],
   providers: [
-    Gateway,
+    Gateway, 
+    FirebaseProvider,
     AuthService, EventService, UserService, MessageService, SwipeService, PresenceService, PushService,
-    AuthRepo, ChatRepo, EventRepo, UserRepo,
+    AuthRepo, ChatRepo, EventRepo, UserRepo, DeviceTokenRepo,
     JwtStrategy,
   ]
 })
