@@ -36,25 +36,25 @@ export class Gateway implements OnGatewayConnection {
   // ─────────────────────── WebSocket ───────────────────────
   async handleConnection(client: Socket) {      // wird automatisch aufgerufen
   // 1) Authentifizieren
-    const phoneNumber = await this.authService.authenticate(client);
+    const userId = await this.authService.authenticate(client);
 
-    if (!phoneNumber) {          // unauthenticated
+    if (!userId) {          // unauthenticated
       client.disconnect(true);
       return;
     }
 
   // 2) Daten am Socket hinterlegen 
-    client.data.phone = phoneNumber;
+    client.data.userId = userId;
     
   // 3) Neuen Empfänger registrieren
-    this.presenceService.add(client, phoneNumber); // add client to presence service
+    this.presenceService.add(client, userId); // add client to presence service
    
   
   // 4) Aufräumen bei Disconnect
-    client.on('disconnect', () => { this.presenceService.remove(client, phoneNumber); });
+    client.on('disconnect', () => { this.presenceService.remove(client, userId); });
       
 
-    this.logger.log(`✚ client ${client.id} mapped to user ${phoneNumber}`);
+    this.logger.log(`✚ client ${client.id} mapped to user ${userId}`);
   }
 
   // ────────────────── Chat-Nachricht vom Client ──────────────────

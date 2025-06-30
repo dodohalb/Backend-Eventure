@@ -59,7 +59,7 @@ export class AuthService {
     //  throw new UnauthorizedException('User details registration failed');
 
     /* 5) issue JWT */
-    const token = this.sign(dto.phoneNumber);
+    const token = this.sign(newUser.id);
     return { msg: "User registered successfully", token: token, userID: newUser.id };
   }
 
@@ -88,33 +88,34 @@ export class AuthService {
       throw new UnauthorizedException('invalid credentials');
     }
 
-    /* 3) sign and return JWT */
-    const token = this.sign(dto.phoneNumber);
-
-    // 4) load User Profile
+    // 3) load User Profile
     const user = await this.userRepo.getUserByPhone(dto.phoneNumber);
-    if(!user) {
-      this.logger.warn("Login attempt failed: User profile not found for phone number:", dto.phoneNumber);
+    if(user && user.id) {
+       /* 4) sign and return JWT */
+       const token = this.sign(user.id);
+       return { msg: 'logged in', token: token, user: user };
     }
 
-    return { msg: 'logged in', token: token, user: user };
+    throw new UnauthorizedException('User profile not found');
+   
+   
   }
 
 
 
-  /* helper – create compact JWT payload { sub: phoneNumber } */
-  private sign(phoneNumber: string) {
-    return this.jwt.sign({ sub: phoneNumber });
+  /* helper – create compact JWT payload { sub: userId } */
+  private sign(userId: number) {
+    return this.jwt.sign({ sub: userId });
   }
 
-  async authenticate(client: Socket): Promise<string | null> {
+  async authenticate(client: Socket): Promise<number | null> {
     const token = client.handshake.auth?.token as string | undefined;  // JWT token from client
     if (!token) {
       this.logger.warn('Client connected without token:', client.id);
       return null;
     }
     try {
-      const payload = this.jwt.verify<{ sub: string }>(token.replace(/^Bearer\s/, ''));  // verify JWT
+      const payload = this.jwt.verify<{ sub: number }>(token.replace(/^Bearer\s/, ''));  // verify JWT
       return payload.sub;
     } catch (error) {
       this.logger.warn('✖ bad token, disconnecting:', client.id);
