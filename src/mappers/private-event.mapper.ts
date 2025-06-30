@@ -21,6 +21,7 @@ export class PrivateEventMapper {
     }
     e.users = domain.users.map(u => UserMapper.toEntity(u));
     e.chat  = domain.chat.map(m => ChatMessageMapper.toEntity(m));
+    e.creator = UserMapper.toEntity(domain.getCreator());  // neu
     return e;
   }
 
@@ -32,6 +33,7 @@ export class PrivateEventMapper {
       entity.description,
       entity.date,
       'private',
+      UserMapper.toDomain(entity.creator),
     );
     d.id            = entity.id;
     d.maxMembers    = entity.maxMembers;

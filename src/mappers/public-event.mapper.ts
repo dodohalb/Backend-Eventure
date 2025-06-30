@@ -2,17 +2,20 @@
 import { PublicEvent } from 'src/domainObjects/publicEvent';
 import { PublicEventEntity } from 'src/entities/public_event.entity';
 import { AddressMapper } from './address.mapper';
+import { UserMapper } from './user.mapper';
+
 
 export class PublicEventMapper {
   static toEntity(domain: PublicEvent): PublicEventEntity {
     const e = new PublicEventEntity();
-    if (domain.id) e.id            = domain.id;
-    e.name                          = domain.name;
-    e.description                   = domain.description;
-    e.date                          = domain.date;
-    e.picture                       = domain.picture;
+    if (domain.id) e.id = domain.id;
+    e.name = domain.name;
+    e.description = domain.description;
+    e.date = domain.date;
+    e.picture = domain.picture;
+    e.creator = UserMapper.toEntity(domain.getCreator());
     if (domain.address) {
-      e.address                     = AddressMapper.toEntity(domain.address);
+      e.address = AddressMapper.toEntity(domain.address);
     }
     return e;
   }
@@ -25,6 +28,7 @@ export class PublicEventMapper {
       entity.description,
       entity.date,
       'public',
+      UserMapper.toDomain(entity.creator),
     );
     d.id = entity.id;
     return d;

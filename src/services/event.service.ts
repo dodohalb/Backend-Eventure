@@ -9,7 +9,7 @@ import { User } from 'src/domainObjects/user';
 
 @Injectable()
 export class EventService {
-   
+
     /* DAO abstraction used for persistence ─ here bound to MySQL */
     //private dao: DAO<Event> = new EventMySQL();
 
@@ -38,25 +38,45 @@ export class EventService {
      *  eventString : JSON string with all other event properties
      *  Returns     : confirmation + the entity saved by the DAO
      * ------------------------------------------------------------------ */
-    async createEvent(file: Express.Multer.File, eventString: string): Promise<{ msg: string; event: Event }> {
+    async createEvent(file: Express.Multer.File, eventString: string, creatorId: number): Promise<{ msg: string; event: Event }> {
         /* 1) Convert incoming JSON string to Event instance */
-        const event = JSON.parse(eventString) as Event;
+        const dto = JSON.parse(eventString) as any;
 
-        /* 2) If an image is present, store its raw buffer in the entity */
-        if (file) {
-            this.logger.log("Received file:", file.originalname);
-            event.picture = file.buffer;
+        // 2) Ersteller holen
+        const creator = await this.userRepo.get(creatorId);
+        if (!creator) throw new NotFoundException('Creator nicht gefunden');
+
+        // 3) Domain-Objekt bauen (inkl. creator)
+        let event: Event;
+        if (dto.type === 'public') {
+            event = new PublicEvent(
+                dto.address,
+                file?.buffer ?? null,
+                dto.name,
+                dto.description,
+                new Date(dto.date),
+                'public',
+                creator,
+            );
+        } else {
+            const priv = new PrivateEvent(
+                dto.address,
+                file?.buffer ?? null,
+                dto.name,
+                dto.description,
+                new Date(dto.date),
+                'private',
+                creator,
+            );
+            priv.maxMembers = dto.maxMembers;
+            priv.visibility = dto.visibility;
+            priv.authorization = dto.authorization;
+            event = priv;
         }
 
-        /* 3) Persist entity through DAO layer */
+        // 4) Persistieren
         const result = await this.eventRepo.insert(event as any);
-        if (!result) {
-            throw new Error('Event not inserted');
-        }
-
-        /* 4) Log and return success response */
-        this.logger.log("createEvent called:", event.name);
-        return { msg: "Event created successfully", event: result };
+        return { msg: 'Event created successfully', event: result };
     }
 
     async getEvent(id: number): Promise<Event> {
@@ -113,13 +133,13 @@ export class EventService {
         return { msg: `User ${userId} wurde abgelehnt` };
     }
 
-     async getNewEventMembers(eventId: number): Promise<User[]> {
+    async getNewEventMembers(eventId: number): Promise<User[]> {
         this.logger.log(`getNewEventMembers called for eventId: ${eventId}`);
-        const event =  await this.eventRepo.get(eventId);
-        if (!event) throw new NotFoundException(`Event ${eventId} nicht gefunden`); 
+        const event = await this.eventRepo.get(eventId);
+        if (!event) throw new NotFoundException(`Event ${eventId} nicht gefunden`);
         return event.getUsers();
     }
-    
+
 
 
 }

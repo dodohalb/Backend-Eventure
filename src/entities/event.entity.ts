@@ -1,5 +1,6 @@
-import { Column, ManyToOne, PrimaryGeneratedColumn, Entity, TableInheritance } from 'typeorm';
+import { Column, ManyToOne, PrimaryGeneratedColumn, Entity, TableInheritance, JoinColumn } from 'typeorm';
 import { AddressEntity } from './address.entity';
+import { UserEntity } from './user.entity';
 
 @Entity({ name: 'event_entity' })
 @TableInheritance({ column: { name: 'type', type: 'varchar', }, pattern: 'STI', })
@@ -26,4 +27,9 @@ export abstract class EventEntity {
 
   @ManyToOne(() => AddressEntity, { cascade: true, eager: true, nullable: true })
   address: AddressEntity;
+
+  @ManyToOne(() => UserEntity, { eager: true })
+  @JoinColumn({ name: 'creator_id' })
+  creator: UserEntity;
+
 }

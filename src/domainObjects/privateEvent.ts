@@ -33,8 +33,9 @@ export class PrivateEvent extends Event {
             description: string,
             date: Date,
             type: string,
+            creator: User,  
         ) {
-            super(address, picture, name, description, date, type);
+            super(address, picture, name, description, date, type, creator);
         this.users = [];
         this.chat = [];
         }
