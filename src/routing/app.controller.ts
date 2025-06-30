@@ -7,6 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 
 import { EventService }   from '../services/event.service';
@@ -28,6 +29,8 @@ import type { Express }    from 'express';
 import { LoginDto }        from '../auth/loginDto';
 import { Gateway } from './app.gateway';
 import { timestamp } from 'rxjs';
+import { PushService } from 'src/services/push.Service';
+import { DeviceTokenDto} from 'src/auth/deviceTokenDto';
 
 @Controller()
 export class AppController {
@@ -42,6 +45,7 @@ export class AppController {
     private readonly messageService:  MessageService,
     private readonly swipeService: SwipeService,
     private readonly authService:  AuthService,
+    private readonly pushService: PushService,  // inject PushService for notifications
 
     private readonly gateway: Gateway,  // inject WebSocket gateway
   ) {}
@@ -69,14 +73,14 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Post('users/decline')
   async declineUser(@Body('eventId') eventId: number,@Body('userId')  userId:  number,): Promise<{ msg: string }> {
-    return this.userService.declineUser(eventId, userId);
+    return this.eventService.declineUser(eventId, userId);
   }
 
   /** Host authorises (confirms) a participant */
   @UseGuards(JwtAuthGuard)
   @Post('users/authorize')
   async authorizeUser(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
-    return this.userService.authorizeUser(eventId, userId);
+    return this.eventService.authorizeUser(eventId, userId);
   }
 
   /** Logged-in user updates own profile */
@@ -127,10 +131,27 @@ export class AppController {
 
   
 
-@UseGuards(JwtAuthGuard)
-@Post('broadcast')
-broadcast(@Body('text') text: string) {
-  this.gateway.server.emit('system', { text });   // ◀︎ global push
-  return { msg: 'broadcast sent' };
+  @UseGuards(JwtAuthGuard)
+  @Post('broadcast')
+  broadcast(@Body('text') text: string) {
+    this.gateway.server.emit('system', { text });   // ◀︎ global push
+    return { msg: 'broadcast sent' };
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('get-new-members')
+  async getNewEventMembers(@Body('eventId') eventId: number): Promise<User[]> {
+    this.logger.log(`getNewEventMembers called for eventId: ${eventId}`);
+    return this.eventService.getNewEventMembers(eventId);
+  }
+  @Post('push-token')
+  @UseGuards(JwtAuthGuard)
+  async saveToken(@Body() deviceTokenDto: DeviceTokenDto): Promise<void> {
+  this.logger.log(`Saving push token for user ${deviceTokenDto}`);
+  await this.pushService.upsertToken(deviceTokenDto);          
 }
+
+
+
 }
