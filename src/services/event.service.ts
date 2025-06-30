@@ -9,6 +9,7 @@ import { User } from 'src/domainObjects/user';
 
 @Injectable()
 export class EventService {
+   
     /* DAO abstraction used for persistence ─ here bound to MySQL */
     //private dao: DAO<Event> = new EventMySQL();
 
@@ -16,9 +17,8 @@ export class EventService {
     private logger = new Logger(EventService.name);
 
     constructor(
-        @Inject(EventRepo) private readonly dao: DAO<PublicEvent | PrivateEvent>,
-        private readonly eventRepo: EventRepo,
-        private readonly userRepo: UserRepo,
+        @Inject(EventRepo) private readonly eventRepo: DAO<Event>,
+        @Inject(UserRepo) private readonly userRepo: UserRepo,
     ) { }
 
     /* Update an existing event (TODO: implement DB logic) */
@@ -28,7 +28,7 @@ export class EventService {
         if (file) {
             event.picture = file.buffer;
         }
-        await this.dao.update(event as any);
+        await this.eventRepo.update(event as any);
         return { msg: 'Event updated successfully' };
     }
 
@@ -49,7 +49,7 @@ export class EventService {
         }
 
         /* 3) Persist entity through DAO layer */
-        const result = await this.dao.insert(event as any);
+        const result = await this.eventRepo.insert(event as any);
         if (!result) {
             throw new Error('Event not inserted');
         }
@@ -61,11 +61,11 @@ export class EventService {
 
     async getEvent(id: number): Promise<Event> {
         this.logger.log('getEvent called for id:', id);
-        return await this.dao.get(id);
+        return await this.eventRepo.get(id);
     }
 
     async deleteEvent(id: number): Promise<{ msg: string }> {
-        await this.dao.delete(id);
+        await this.eventRepo.delete(id);
         this.logger.log('deleteEvent called for id:', id);
         return { msg: 'Event deleted successfully' };
     }
@@ -112,6 +112,14 @@ export class EventService {
 
         return { msg: `User ${userId} wurde abgelehnt` };
     }
+
+     async getNewEventMembers(eventId: number): Promise<User[]> {
+        this.logger.log(`getNewEventMembers called for eventId: ${eventId}`);
+        const event =  await this.eventRepo.get(eventId);
+        if (!event) throw new NotFoundException(`Event ${eventId} nicht gefunden`); 
+        return event.getUsers();
+    }
+    
 
 
 }
