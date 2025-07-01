@@ -56,32 +56,57 @@ export class EventRepo implements DAO<Event> {
   /** Erzeugt ein neues Event, je nach Instanztyp */
   async insert(obj: Event): Promise<Event> {
     if (obj instanceof PublicEvent) {
+      
       const e = PublicEventMapper.toEntity(obj);
+      
       const saved = await this.publicRepo.save(e);
       this.logger.log(`Inserted PublicEvent ${saved.id}`);
-      return PublicEventMapper.toDomain(saved);
+      const full = await this.privateRepo.findOne({
+          where: { id: saved.id },
+          relations: ['address', 'users', 'users.address'],
+        });
+      return PublicEventMapper.toDomain(full!);
     } else {
+      this.logger.error(`Jetzt gehts in den mapper`);
       const e = PrivateEventMapper.toEntity(obj as PrivateEvent);
+      this.logger.error(`Jetzt gehts in den speicher`);
       const saved = await this.privateRepo.save(e);
       this.logger.log(`Inserted PrivateEvent ${saved.id}`);
-      return PrivateEventMapper.toDomain(saved);
+      const full = await this.privateRepo.findOne({
+          where: { id: saved.id },
+          relations: ['address', 'users', 'users.address'],
+        });
+      return PrivateEventMapper.toDomain(full!);
     }
   }
 
   /** Überschreibt ein existierendes Event */
   async update(obj: Event): Promise<Event> {
     if (obj instanceof PublicEvent) {
+      
       const e = PublicEventMapper.toEntity(obj);
+      
       const saved = await this.publicRepo.save(e);
-      this.logger.log(`Updated PublicEvent ${saved.id}`);
-      return PublicEventMapper.toDomain(saved);
+      this.logger.log(`Inserted PublicEvent ${saved.id}`);
+      const full = await this.privateRepo.findOne({
+          where: { id: saved.id },
+          relations: ['address', 'users', 'users.address'],
+        });
+      return PublicEventMapper.toDomain(full!);
     } else {
+      this.logger.error(`Jetzt gehts in den mapper`);
       const e = PrivateEventMapper.toEntity(obj as PrivateEvent);
+      this.logger.error(`Jetzt gehts in den speicher`);
       const saved = await this.privateRepo.save(e);
-      this.logger.log(`Updated PrivateEvent ${saved.id}`);
-      return PrivateEventMapper.toDomain(saved);
+      this.logger.log(`Inserted PrivateEvent ${saved.id}`);
+      const full = await this.privateRepo.findOne({
+          where: { id: saved.id },
+          relations: ['address', 'users', 'users.address'],
+        });
+      return PrivateEventMapper.toDomain(full!);
     }
   }
+  
 
   /** Löscht ein Event anhand der ID */
   async delete(id: number): Promise<Event> {

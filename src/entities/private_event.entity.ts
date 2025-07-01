@@ -11,12 +11,27 @@ import { ChatMessageEntity } from './chat_message.entity';
 
 @ChildEntity('private') 
 export class PrivateEventEntity extends EventEntity {
-  @ManyToMany(() => UserEntity, { cascade: true, eager: true })
-  @JoinTable()
+  
+  
+  @ManyToMany(() => UserEntity, {
+    cascade: false,    // Du entscheidest, ob User mitgespeichert werden
+    eager: true,       // lädt die User automatisch mit
+  })
+  @JoinTable({
+    name: 'private_event_users',            // Name der Join-Tabelle
+    joinColumn: {
+      name: 'eventId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+  })
   users: UserEntity[];
+  
+  
 
-  @OneToMany(() => ChatMessageEntity, (chat) => chat.user, { cascade: true })
-  chat: ChatMessageEntity[];
 
   @Column() maxMembers: number;
   @Column() visibility: boolean;

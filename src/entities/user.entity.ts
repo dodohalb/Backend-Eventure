@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { AddressEntity } from './address.entity';
 
 @Entity()
@@ -18,7 +18,11 @@ export class UserEntity {
   @Column({ type: 'varchar', unique: true })    // ← hier UNIQUE hinzu
   phoneNumber: string;
 
-  @ManyToOne(() => AddressEntity, { cascade: true, eager: true })
-  @JoinColumn()
+  @OneToOne(() => AddressEntity, {
+    cascade: true,       // speichert die Adresse bei userRepo.save()
+    eager: true,         // lädt Adresse automatisch mit
+    onDelete: 'CASCADE', // löscht Adresse, wenn User gelöscht wird
+  })
+  @JoinColumn({ name: 'addressId' })
   address: AddressEntity;
 }

@@ -1,4 +1,4 @@
-import { Column, ManyToOne, PrimaryGeneratedColumn, Entity, TableInheritance, JoinColumn } from 'typeorm';
+import { Column, ManyToOne, PrimaryGeneratedColumn, Entity, TableInheritance, JoinColumn, OneToOne } from 'typeorm';
 import { AddressEntity } from './address.entity';
 import { UserEntity } from './user.entity';
 
@@ -18,18 +18,23 @@ export abstract class EventEntity {
   @Column()
   date: Date;
 
-  // wir entfernen hier die eigene @Column()-Deklaration von `type`, weil TableInheritance schon die Discriminator-Spalte anlegt:
-  // @Column()
-  // type: string;
+  
+  @Column()
+  type: string;
 
   @Column({ type: 'bytea', nullable: true }) // falls PostgreSQL
   picture: Buffer | null;
 
-  @ManyToOne(() => AddressEntity, { cascade: true, eager: true, nullable: true })
+  @OneToOne(() => AddressEntity, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'addressId' })
   address: AddressEntity;
+    
+  @Column() 
+  creatorId: number;
 
-  @ManyToOne(() => UserEntity, { eager: true })
-  @JoinColumn({ name: 'creator_id' })
-  creator: UserEntity;
 
 }

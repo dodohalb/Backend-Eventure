@@ -11,9 +11,9 @@ export class PublicEvent extends Event {
                 description: string,
                 date: Date,
                 type: string,
-                creator: User,
+              
             ) {
-                super(adress, picture, name, description, date, type, creator);
+                super(adress, picture, name, description, date, type);
             }
 
             getUsers() :User[] {

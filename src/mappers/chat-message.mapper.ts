@@ -11,9 +11,7 @@ export class ChatMessageMapper {
     e.user = UserMapper.toEntity(domain.user);
     e.content = domain.content;
     e.timestamp = domain.timestamp;
-    const pe = new PrivateEventEntity();
-    pe.id = domain.eventId;
-    e.event = pe;
+    e.eventId = domain.eventId;
     return e;
   }
 
@@ -23,7 +21,7 @@ export class ChatMessageMapper {
     d.user = UserMapper.toDomain(entity.user);
     d.content = entity.content;
     d.timestamp = entity.timestamp;
-    d.eventId = entity.event.id;
+    d.eventId = entity.eventId;
     return d;
   }
 }

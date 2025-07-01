@@ -5,7 +5,7 @@ import { AddressEntity } from 'src/entities/address.entity';
 export class AddressMapper {
   static toEntity(domain: Address): AddressEntity {
     const e = new AddressEntity();
-    if ((domain as any).id) e.id        = (domain as any).id;
+    if (domain.id) e.id        = domain.id;
     e.street                         = domain.street;
     e.number                         = domain.number;
     e.city                           = domain.city;

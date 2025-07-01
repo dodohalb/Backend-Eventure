@@ -4,6 +4,7 @@ import { PrivateEventEntity } from 'src/entities/private_event.entity';
 import { UserMapper } from './user.mapper';
 import { ChatMessageMapper } from './chat-message.mapper';
 import { AddressMapper } from './address.mapper';
+import { UserEntity } from 'src/entities/user.entity';
 
 export class PrivateEventMapper {
   static toEntity(domain: PrivateEvent): PrivateEventEntity {
@@ -16,12 +17,17 @@ export class PrivateEventMapper {
     e.maxMembers                    = domain.maxMembers;
     e.visibility                    = domain.visibility;
     e.authorization                 = domain.authorization;
+   if (domain.creatorId) e.creatorId= domain.creatorId;
     if (domain.address) {
       e.address                     = AddressMapper.toEntity(domain.address);
     }
-    e.users = domain.users.map(u => UserMapper.toEntity(u));
-    e.chat  = domain.chat.map(m => ChatMessageMapper.toEntity(m));
-    e.creator = UserMapper.toEntity(domain.getCreator());  // neu
+    e.type                          = domain.type;
+    e.users = domain.users.map(u => {
+        const ue = new UserEntity(); 
+        ue.id = u.id!;     // zwingend existierende ID
+        return ue;
+    });
+
     return e;
   }
 
@@ -32,15 +38,15 @@ export class PrivateEventMapper {
       entity.name,
       entity.description,
       entity.date,
-      'private',
-      UserMapper.toDomain(entity.creator),
+      entity.type,
     );
+
+    d.creatorId   = entity.creatorId;
     d.id            = entity.id;
     d.maxMembers    = entity.maxMembers;
     d.visibility    = entity.visibility;
     d.authorization = entity.authorization;
     entity.users.forEach(u => d.addUser(UserMapper.toDomain(u)));
-    entity.chat.forEach(m => d.addChatMessage(ChatMessageMapper.toDomain(m)));
     return d;
   }
 }

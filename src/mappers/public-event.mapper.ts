@@ -13,7 +13,7 @@ export class PublicEventMapper {
     e.description = domain.description;
     e.date = domain.date;
     e.picture = domain.picture;
-    e.creator = UserMapper.toEntity(domain.getCreator());
+    if (domain.creatorId) e.creatorId = domain.creatorId;
     if (domain.address) {
       e.address = AddressMapper.toEntity(domain.address);
     }
@@ -27,9 +27,9 @@ export class PublicEventMapper {
       entity.name,
       entity.description,
       entity.date,
-      'public',
-      UserMapper.toDomain(entity.creator),
+      entity.type,
     );
+    d.creatorId=entity.creatorId,
     d.id = entity.id;
     return d;
   }

@@ -61,6 +61,7 @@ export class ChatRepo implements DAO<ChatMessage, ChatMessageEntity> {
     return ChatMessageMapper.toDomain(e);
   }
 
+  /*
   async getMessagesAfter(eventId: number, after: Date): Promise<ChatMessage[]> {
     this.logger.log(
       `Lade neue Nachrichten für Event ${eventId} nach ${after.toISOString()}`,
@@ -77,5 +78,5 @@ export class ChatRepo implements DAO<ChatMessage, ChatMessageEntity> {
 
     return entities.map(e => ChatMessageMapper.toDomain(e));
   }
-
+*/
 }

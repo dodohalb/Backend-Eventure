@@ -10,8 +10,8 @@ export class ChatMessageEntity {
   @ManyToOne(() => UserEntity, { eager: true })
   user: UserEntity;
 
-  @ManyToOne(() => PrivateEventEntity, event => event.chat, { onDelete: 'CASCADE' })
-  event: PrivateEventEntity;
+  @Column()
+  eventId: number;
 
   @Column()
   content: string;
