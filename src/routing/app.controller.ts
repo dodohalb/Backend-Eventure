@@ -31,6 +31,7 @@ import { Gateway } from './app.gateway';
 import { timestamp } from 'rxjs';
 import { PushService } from 'src/services/push.Service';
 import { DeviceTokenDto} from 'src/auth/deviceTokenDto';
+import { UserId } from 'src/config/decorator';
 
 @Controller()
 export class AppController {
@@ -109,11 +110,11 @@ export class AppController {
 
   /** Host creates a new event – accepts multipart (picture + JSON string) */
   @UseGuards(JwtAuthGuard)
-  @Post('create-event')
+  @Post('create-event')  
   @UseInterceptors(FileInterceptor('picture'))   // Multer: extract file-part
-  async createEvent(@UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string; event: Event }> {
+  async createEvent(@UserId() userId: number, @UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string; event: Event }> {
     this.logger.log(`Creating event with data: ${eventString}`);
-    return this.eventService.createEvent(file, eventString);
+    return this.eventService.createEvent(file, eventString, userId);
   }
 
   /** Get event list by filter – expects JSON body even on GET */

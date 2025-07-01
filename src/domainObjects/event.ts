@@ -33,7 +33,8 @@ export abstract class Event {
     @IsString()
     type: string;
 
-    creator: User;
+    @IsOptional()
+    creatorId?: number;
 
     constructor(
         address: Address,
@@ -41,8 +42,7 @@ export abstract class Event {
         name: string,
         description: string,
         date: Date,
-        type: string,
-        creator: User,
+        type: string
     ) {
         this.address = address;
         this.picture = picture;
@@ -50,13 +50,9 @@ export abstract class Event {
         this.description = description;
         this.date = date;
         this.type = type;
-        this.creator   = creator;
     }
 
     abstract getUsers():User[];
     
-    getCreator(): User {
-    return this.creator;
-  }
 
 }
