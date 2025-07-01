@@ -76,7 +76,7 @@ export class MessageService {
     var allMessages: ChatMessage[] = [];
     for (const event of events) {
       const messages = await this.chatRepo.findMany(
-        { event: { id: event.id }, timestamp: MoreThan(timestamp) }, 
+        { eventId: event.id, timestamp: MoreThan(timestamp) }, 
         { order: { timestamp: 'ASC' }, relations: ['user', 'event'] }, 
       );
       allMessages = allMessages.concat(messages);
