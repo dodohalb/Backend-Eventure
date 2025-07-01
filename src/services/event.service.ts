@@ -6,6 +6,7 @@ import { DAO } from 'src/repository/dao';
 import { EventRepo } from 'src/repository/event.repo';
 import { UserRepo } from 'src/repository/user.repo';
 import { User } from 'src/domainObjects/user';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class EventService {
@@ -40,42 +41,19 @@ export class EventService {
      * ------------------------------------------------------------------ */
     async createEvent(file: Express.Multer.File, eventString: string, creatorId: number): Promise<{ msg: string; event: Event }> {
         /* 1) Convert incoming JSON string to Event instance */
-        const dto = JSON.parse(eventString) as any;
-
+        const raw = JSON.parse(eventString)
+        const event = plainToInstance(PrivateEvent, raw);
+    
         // 2) Ersteller holen
-        const creator = await this.userRepo.get(creatorId);
-        if (!creator) throw new NotFoundException('Creator nicht gefunden');
+        event.creatorId = creatorId; // Set the creatorId from the request
+
 
         // 3) Domain-Objekt bauen (inkl. creator)
-        let event: Event;
-        if (dto.type === 'public') {
-            event = new PublicEvent(
-                dto.address,
-                file?.buffer ?? null,
-                dto.name,
-                dto.description,
-                new Date(dto.date),
-                'public',
-                creator,
-            );
-        } else {
-            const priv = new PrivateEvent(
-                dto.address,
-                file?.buffer ?? null,
-                dto.name,
-                dto.description,
-                new Date(dto.date),
-                'private',
-                creator,
-            );
-            priv.maxMembers = dto.maxMembers;
-            priv.visibility = dto.visibility;
-            priv.authorization = dto.authorization;
-            event = priv;
-        }
+        
 
         // 4) Persistieren
-        const result = await this.eventRepo.insert(event as any);
+        const result = await this.eventRepo.insert(event);
+        
         return { msg: 'Event created successfully', event: result };
     }
 
