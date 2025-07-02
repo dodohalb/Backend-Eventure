@@ -70,12 +70,14 @@ export class AppController {
   // All routes below are JWT-protected → JwtAuthGuard validates token
   // and injects req.user.
 
-  /** Host declines a pending participant */
+
+  
+  /** Host declines a pending participant 
   @UseGuards(JwtAuthGuard)
   @Post('users/decline')
   async declineUser(@Body('eventId') eventId: number,@Body('userId')  userId:  number,): Promise<{ msg: string }> {
     return this.eventService.declineUser(eventId, userId);
-  }
+  }*/
 
   /** Host authorises (confirms) a participant */
   @UseGuards(JwtAuthGuard)

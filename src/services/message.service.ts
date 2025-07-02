@@ -12,6 +12,7 @@ import { Gateway } from '../routing/app.gateway';
 import { MoreThan } from 'typeorm';
 import { after } from 'node:test';
 import { ChatMessageEntity } from 'src/entities/chat_message.entity';
+import { User } from 'src/domainObjects/user';
 
 
 @Injectable()
@@ -38,30 +39,15 @@ export class MessageService {
 
     // 2) Empfängerliste Laden
     const event = await this.eventRepo.get(chatMessage.eventId);
-    const receivers = event.getUsers().map(user => user.id)??[];
 
-    // 3) trennen in online | offline
-    const online  : number[] = [];
-    const offline : number[] = [];
-
-    for (const receiver of receivers) {
-      if (receiver && receiver !== chatMessage.user.id )  (this.presenceService.isOnline(receiver) ? online : offline).push(receiver);
-    }
-
-    // 4) live senden
-    for (const userId of online) {
-      this.gateway.server.to(userId.toString()).emit('newMessage', saved);
-    }
-
-    //todo: benachrichte Offline recievers für GET unread Messages
-    // 5) offline pushen
-    if (offline.length) {
-      await this.pushService.notifyOffline(offline);
-    }
+    // 3) Benachrichtigen
+    if(chatMessage.user.id)
+    await this.notiffyUser(event.getUsers(), chatMessage.user.id, 'chatMessage', saved);
 
     this.logger.log(
-      `msg ${saved.messageId} → online ${online.length}, offline ${offline.length}`,
-    );    
+      `msg ${saved.messageId} sent by user ${chatMessage.user.id} to event ${chatMessage.eventId} with content: "${chatMessage.content}"`,
+    );
+    
   }
   
   
@@ -84,6 +70,35 @@ export class MessageService {
 
     return allMessages;
   }
+
+  async notiffyUser(receivers: User[], senderId: number, msg: string, data: any): Promise<void> {
+    const online  : number[] = [];
+    const offline : number[] = [];
+
+    const receiverIds: number[] = receivers.map((u: User) => {
+          if (u.id == null) {
+            throw new Error(`User ${u.name || '<unknown>'} hat keine ID!`);
+          }
+          return u.id;
+        });
+
+    
+    for (const receiverId of receiverIds) {
+      if (receiverId !== senderId )  (this.presenceService.isOnline(receiverId) ? online : offline).push(receiverId);
+    }
+
+    // 4) live senden
+    for (const userId of online) {
+      this.gateway.server.to(userId.toString()).emit(msg, data);
+    }
+
+    //todo: benachrichte Offline recievers für GET unread Messages
+    // 5) offline pushen
+    if (offline.length) {
+      await this.pushService.notifyOffline(offline);
+    }
+  }
+
 
 
  

@@ -7,6 +7,7 @@ import { EventRepo } from 'src/repository/event.repo';
 import { UserRepo } from 'src/repository/user.repo';
 import { User } from 'src/domainObjects/user';
 import { plainToInstance } from 'class-transformer';
+import { MessageService } from './message.service';
 
 @Injectable()
 export class EventService {
@@ -20,6 +21,7 @@ export class EventService {
     constructor(
         @Inject(EventRepo) private readonly eventRepo: DAO<Event>,
         @Inject(UserRepo) private readonly userRepo: UserRepo,
+        @Inject(MessageService) private readonly messageService: MessageService
     ) { }
 
     /* Update an existing event (TODO: implement DB logic) */
@@ -84,9 +86,16 @@ export class EventService {
         event.addUser(user);
 
         // 4) Persistiere Update
-        await this.eventRepo.update(event);
+        const updatedEvent = await this.eventRepo.update(event);
 
-        return { msg: `User ${userId} wurde autorisiert` };
+
+        // 5) Benachrichtige alle User des Events
+      
+        if (updatedEvent.creatorId) {
+            await this.messageService.notiffyUser(updatedEvent.getUsers(), updatedEvent.creatorId, 'eventUpdate', updatedEvent);
+            return { msg: `User ${userId} wurde autorisiert` };
+        }
+        throw new NotFoundException(`Creator of event ${eventId} not found`);
     }
 
     async declineUser(eventId: number, userId: number): Promise<{ msg: string }> {
