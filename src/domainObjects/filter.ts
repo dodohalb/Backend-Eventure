@@ -2,9 +2,6 @@ import { IsArray, IsDate, IsNumber, IsString, IsOptional } from "class-validator
 
 export class Filter {
 
-    @IsOptional()
-    id?: number;
-
     @IsString()
     type: string;
 

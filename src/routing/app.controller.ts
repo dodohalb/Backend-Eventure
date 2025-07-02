@@ -96,8 +96,8 @@ export class AppController {
   /** User swipes / joins an event */
   @UseGuards(JwtAuthGuard)
   @Post('join-event')
-  async joinEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
-    return this.eventService.joinEvent(eventId, userId);
+  async joinEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<void> {
+    this.eventService.joinEvent(eventId, userId);
   }
 
   // ─────────────────────── Event update / creation ───────────────────────
