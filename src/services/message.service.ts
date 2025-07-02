@@ -71,31 +71,37 @@ export class MessageService {
     return allMessages;
   }
 
-  async notiffyUser(receivers: User[], senderId: number, msg: string, data: any): Promise<void> {
+  async notiffyUser(receivers: User[] |User, senderId: number, msg: string, data: any): Promise<void> {
     const online  : number[] = [];
     const offline : number[] = [];
 
-    const receiverIds: number[] = receivers.map((u: User) => {
-          if (u.id == null) {
-            throw new Error(`User ${u.name || '<unknown>'} hat keine ID!`);
-          }
-          return u.id;
-        });
+    if (Array.isArray(receivers)) {
+      const receiverIds: number[] = receivers.map((u: User) => {
+            if (u.id == null) {
+              throw new Error(`User ${u.name || '<unknown>'} hat keine ID!`);
+            }
+            return u.id;
+          });
+        
+      
+      for (const receiverId of receiverIds) {
+        if (receiverId !== senderId )  (this.presenceService.isOnline(receiverId) ? online : offline).push(receiverId);
+      }
+      
 
-    
-    for (const receiverId of receiverIds) {
-      if (receiverId !== senderId )  (this.presenceService.isOnline(receiverId) ? online : offline).push(receiverId);
-    }
+      // 4) live senden
+      for (const userId of online) {
+        this.gateway.server.to(userId.toString()).emit(msg, data);
+      }
 
-    // 4) live senden
-    for (const userId of online) {
-      this.gateway.server.to(userId.toString()).emit(msg, data);
-    }
+      //todo: benachrichte Offline recievers für GET unread Messages
+      // 5) offline pushen
+      if (offline.length) {
+        await this.pushService.notifyOffline(offline);
+      }
 
-    //todo: benachrichte Offline recievers für GET unread Messages
-    // 5) offline pushen
-    if (offline.length) {
-      await this.pushService.notifyOffline(offline);
+    }else{
+      if (receivers.id)  (this.presenceService.isOnline(receivers.id))? this.gateway.server.to(receivers.id.toString()).emit(msg, data): this.pushService.notifyOffline([receivers.id]);
     }
   }
 

@@ -128,5 +128,23 @@ export class EventService {
     }
 
 
+    async joinEvent(eventId: number, userId: number):Promise<{ msg: string }> {
+            this.logger.log("joinEvent called with eventId:", eventId, "and userId:", userId);
+            const event = await this.eventRepo.get(eventId);
+            if(event instanceof PrivateEvent) {
+                if(event.authorization && event.creatorId){
+                    const admin = await this.userRepo.get(event.creatorId);
+                    this.messageService.notiffyUser(admin, userId, 'userWantToJoin', event);
+                }
+                const user = await this.userRepo.get(userId);
+                event.addUser(user);
+                const updatedEvent = await this.eventRepo.update(event);
+                this.messageService.notiffyUser(updatedEvent.getUsers(), userId, 'eventUpdate', updatedEvent);
+
+            }
+            throw new Error('Method not implemented.');
+        }
+
+
 
 }
