@@ -2,7 +2,7 @@
 import { PrivateEvent } from 'src/domainObjects/privateEvent';
 import { PrivateEventEntity } from 'src/entities/private_event.entity';
 import { UserMapper } from './user.mapper';
-import { ChatMessageMapper } from './chat-message.mapper';
+
 import { AddressMapper } from './address.mapper';
 import { UserEntity } from 'src/entities/user.entity';
 
@@ -18,9 +18,9 @@ export class PrivateEventMapper {
     e.visibility                    = domain.visibility;
     e.authorization                 = domain.authorization;
    if (domain.creatorId) e.creatorId= domain.creatorId;
-    if (domain.address) {
-      e.address                     = AddressMapper.toEntity(domain.address);
-    }
+    
+    e.address                     = AddressMapper.toEntity(domain.address);
+    
     e.type                          = domain.type;
     e.users = domain.users.map(u => {
         const ue = new UserEntity(); 

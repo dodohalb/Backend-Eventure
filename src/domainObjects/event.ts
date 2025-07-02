@@ -15,7 +15,7 @@ export abstract class Event {
 
     @ValidateNested()
     @Type(() => Address)
-    address: Address | null;
+    address: Address;
 
     @IsOptional()
     picture: Buffer | null;

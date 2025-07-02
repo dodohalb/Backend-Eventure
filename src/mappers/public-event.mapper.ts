@@ -14,9 +14,8 @@ export class PublicEventMapper {
     e.date = domain.date;
     e.picture = domain.picture;
     if (domain.creatorId) e.creatorId = domain.creatorId;
-    if (domain.address) {
-      e.address = AddressMapper.toEntity(domain.address);
-    }
+   
+    e.address = AddressMapper.toEntity(domain.address);
     return e;
   }
 

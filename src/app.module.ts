@@ -43,6 +43,8 @@ import { PushService } from './services/push.Service';
 import { FirebaseProvider } from './routing/firebase.provider';
 import { DeviceTokenRepo } from './repository/deviceToken.repo';
 import { DeviceTokenEntity } from './entities/deviceToken.entity';
+import { ViewedEvent } from './entities/viewedEvents.entity';
+
 
 @Module({
   imports: [
@@ -62,12 +64,15 @@ import { DeviceTokenEntity } from './entities/deviceToken.entity';
         FilterEntity,
         LoginEntity,
         InteractionEntity,
+        ViewedEvent,
+        DeviceTokenEntity
       ],
       synchronize: true, //in Produktionsbetrieb auf false setzen
       autoLoadEntities: true,
     }),
 
   TypeOrmModule.forFeature([
+    ViewedEvent,
     UserEntity,
     AddressEntity,
     ChatMessageEntity,

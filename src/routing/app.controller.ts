@@ -120,8 +120,8 @@ export class AppController {
   /** Get event list by filter – expects JSON body even on GET */
   @UseGuards(JwtAuthGuard)
   @Post('get-events')
-  async getEvents(@Body('filter') filter: Filter, @Body('phoneNumber') phoneNumber: number): Promise<Event[]> {
-    return this.swipeService.getEvents(filter, phoneNumber);
+  async getEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event[]> {
+    return this.swipeService.getEvents(filter, userId );
   }
 
   @UseGuards(JwtAuthGuard)
