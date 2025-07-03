@@ -8,6 +8,10 @@ import {
   UseInterceptors,
   UploadedFile,
   Req,
+  Param,
+  ParseIntPipe,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 
 import { EventService }   from '../services/event.service';
@@ -25,6 +29,7 @@ import { Filter }         from '../domainObjects/filter';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Express }    from 'express';
+import { Response } from 'express';
 
 import { LoginDto }        from '../auth/loginDto';
 import { Gateway } from './app.gateway';
@@ -119,12 +124,7 @@ export class AppController {
     return this.eventService.createEvent(file, eventString, userId);
   }
 
-  /** Get event list by filter – expects JSON body even on GET */
-  @UseGuards(JwtAuthGuard)
-  @Post('get-events')
-  async getEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event[]> {
-    return this.swipeService.getEvents(filter, userId );
-  }
+  
 
   @UseGuards(JwtAuthGuard)
   @Post('unread-messages')
@@ -156,5 +156,44 @@ export class AppController {
 }
 
 
+ @Get(':id/picture')
+  async getPicture(
+    @Param('id', ParseIntPipe) id: number): Promise<StreamableFile> {
+    
+
+    const { data, mime } = await this.eventService.getEventPicture(id);
+   
+
+
+    return new StreamableFile(data, {
+      type: mime,                          // setzt Content-Type
+    });
+  }
+
+
+// getInteressierte Events
+
+// getZugesagte events
+
+// get anfragen
+
+
+
+
+/** Get event list by filter – expects JSON body even on GET */
+  @UseGuards(JwtAuthGuard)
+  @Post('getPrivateEvent')
+  async getPrivateEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event> {
+    const eventArr=  await this.swipeService.getPrivateEvent(filter, userId );
+  
+    return eventArr[0];
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('getPublicEvent')
+  async getPublicEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event> {
+    const eventArr =  await this.swipeService.getPublicEvent(filter, userId );
+    return eventArr[0];
+  }
 
 }

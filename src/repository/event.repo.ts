@@ -14,6 +14,7 @@ import { ViewedEvent } from 'src/entities/viewedEvents.entity';
 
 @Injectable()
 export class EventRepo implements DAO<Event> {
+   
     
   private readonly logger = new Logger(EventRepo.name);
 
@@ -217,6 +218,31 @@ export class EventRepo implements DAO<Event> {
                 if (event.id)viewedEvent.eventId = event.id;
                 return viewedEvent;
             }));
+    }
+
+
+
+     async getPic(eventId: number): Promise<Buffer> {
+      const pub = await this.publicRepo.findOne({
+        where: { id: eventId },
+        select: ['id','picture'],
+      });
+
+    if (pub?.picture) {
+      this.logger.log(`Picture for PublicEvent ${eventId} loaded`);
+      return pub.picture;
+    }
+
+    const priv = await this.privateRepo.findOne({
+      where: { id: eventId },
+      select: ['id','picture'],
+    });
+
+    if (priv?.picture) {
+      this.logger.log(`Picture for PrivateEvent ${eventId} loaded`);
+      return priv.picture;
+    }
+      throw new Error();
     }
 
 }

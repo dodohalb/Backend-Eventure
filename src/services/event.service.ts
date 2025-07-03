@@ -11,6 +11,7 @@ import { MessageService } from './message.service';
 
 @Injectable()
 export class EventService {
+  
 
     /* DAO abstraction used for persistence ─ here bound to MySQL */
     //private dao: DAO<Event> = new EventMySQL();
@@ -19,7 +20,7 @@ export class EventService {
     private logger = new Logger(EventService.name);
 
     constructor(
-        @Inject(EventRepo) private readonly eventRepo: DAO<Event>,
+        @Inject(EventRepo) private readonly eventRepo: EventRepo,
         @Inject(UserRepo) private readonly userRepo: UserRepo,
         @Inject(MessageService) private readonly messageService: MessageService
     ) { }
@@ -45,6 +46,8 @@ export class EventService {
         /* 1) Convert incoming JSON string to Event instance */
         const raw = JSON.parse(eventString)
         const event = plainToInstance(PrivateEvent, raw);
+
+        if(file) event.picture = file.buffer;
     
         // 2) Ersteller holen
         event.creatorId = creatorId; // Set the creatorId from the request
@@ -55,6 +58,7 @@ export class EventService {
 
         // 4) Persistieren
         const result = await this.eventRepo.insert(event);
+        result.picture=null;
         
         return { msg: 'Event created successfully', event: result };
     }
@@ -147,6 +151,18 @@ export class EventService {
                 
             }
             
+    }
+
+
+      async getEventPicture(eventId: number): Promise<{ data: Buffer; mime: string }> {
+        this.logger.log("Send Client Picture from EventID",eventId);
+        const picture = await this.eventRepo.getPic(eventId); // Raw-Entity (ohne Mapping)
+
+
+            return {
+                data: picture,             // Buffer (Bytea in Postgres)
+                mime: 'image/png',
+            };
         }
 
 
