@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsOrder, FindOptionsWhere, Repository } from 'typeorm';
 import { DAO } from './dao';
@@ -222,7 +222,7 @@ export class EventRepo implements DAO<Event> {
 
 
 
-     async getPic(eventId: number): Promise<Buffer> {
+  async getPic(eventId: number): Promise<Buffer> {
       const pub = await this.publicRepo.findOne({
         where: { id: eventId },
         select: ['id','picture'],
@@ -242,7 +242,8 @@ export class EventRepo implements DAO<Event> {
       this.logger.log(`Picture for PrivateEvent ${eventId} loaded`);
       return priv.picture;
     }
-      throw new Error();
+    this.logger.warn(`No picture found for Event ${eventId}`);
+      throw new NotFoundException(`Kein Bild für Event ${eventId} gefunden`);
     }
 
 }

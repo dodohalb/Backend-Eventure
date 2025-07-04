@@ -119,7 +119,7 @@ export class AppController {
   @UseGuards(JwtAuthGuard)
   @Post('create-event')  
   @UseInterceptors(FileInterceptor('picture'))   // Multer: extract file-part
-  async createEvent(@UserId() userId: number, @UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<{ msg: string; event: Event }> {
+  async createEvent(@UserId() userId: number, @UploadedFile() file: Express.Multer.File, @Body('event') eventString: string): Promise<Event > {
     this.logger.log(`Creating event with data: ${eventString}`);
     return this.eventService.createEvent(file, eventString, userId);
   }
@@ -148,6 +148,8 @@ export class AppController {
     this.logger.log(`getNewEventMembers called for eventId: ${eventId}`);
     return this.eventService.getNewEventMembers(eventId);
   }
+
+  
   @Post('push-token')
   @UseGuards(JwtAuthGuard)
   async saveToken(@Body() deviceTokenDto: DeviceTokenDto): Promise<void> {
@@ -185,7 +187,6 @@ export class AppController {
   @Post('getPrivateEvent')
   async getPrivateEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event> {
     const eventArr=  await this.swipeService.getPrivateEvent(filter, userId );
-  
     return eventArr[0];
   }
 
@@ -195,5 +196,15 @@ export class AppController {
     const eventArr =  await this.swipeService.getPublicEvent(filter, userId );
     return eventArr[0];
   }
+/*
+  @UseGuards(JwtAuthGuard)
+  @Get('all-joined-events')
+  getSecret(@UserId() userId: number) {
+    this.logger.log("Request for all joined events from user: ", userId);
+    return this.eventService.getAllEventsFromUser(userId);
+  }
+
+
+*/
 
 }

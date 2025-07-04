@@ -11,6 +11,7 @@ import { MessageService } from './message.service';
 
 @Injectable()
 export class EventService {
+ 
   
 
     /* DAO abstraction used for persistence ─ here bound to MySQL */
@@ -42,7 +43,7 @@ export class EventService {
      *  eventString : JSON string with all other event properties
      *  Returns     : confirmation + the entity saved by the DAO
      * ------------------------------------------------------------------ */
-    async createEvent(file: Express.Multer.File, eventString: string, creatorId: number): Promise<{ msg: string; event: Event }> {
+    async createEvent(file: Express.Multer.File, eventString: string, creatorId: number): Promise<Event> {
         /* 1) Convert incoming JSON string to Event instance */
         const raw = JSON.parse(eventString)
         const event = plainToInstance(PrivateEvent, raw);
@@ -60,7 +61,7 @@ export class EventService {
         const result = await this.eventRepo.insert(event);
         result.picture=null;
         
-        return { msg: 'Event created successfully', event: result };
+        return result ;
     }
 
     async getEvent(id: number): Promise<Event> {
@@ -165,6 +166,11 @@ export class EventService {
             };
         }
 
+/*
+        async getAllEventsFromUser(userId: number) {
+            const events = await this.eventRepo.findMany()
+        }
+*/
 
 
 }
