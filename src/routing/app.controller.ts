@@ -172,6 +172,15 @@ export class AppController {
     });
   }
 
+   @Get('/user')
+   @UseGuards(JwtAuthGuard)
+  async getUser(@UserId() id: number): Promise<User> {
+    this.logger.log(`getUser called for userId: ${id}`);
+    return this.userService.getUserById(id);
+  }
+
+
+
 
 // getInteressierte Events
 

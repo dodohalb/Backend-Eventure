@@ -5,14 +5,15 @@ import { UserRepo } from 'src/repository/user.repo';
 
 @Injectable()
 export class UserService {
+    
     private readonly logger = new Logger(UserService.name);
     //private dao: DAO<User> = new UserMySQL(); 
 
-    constructor(@Inject(UserRepo) private readonly dao: DAO<User>) {}
+    constructor(@Inject(UserRepo) private readonly userRepo: DAO<User>) {}
 
     async updateProfile(user: User): Promise<{msg: string}> {
         this.logger.log("updateProfile called for user:", user.name);
-        const newProfile = await this.dao.update(user);
+        const newProfile = await this.userRepo.update(user);
         if (!newProfile) {
             this.logger.error("Failed to update profile for user:", user.name);
         }
@@ -29,4 +30,7 @@ export class UserService {
         this.logger.log("declineUser called with eventId:", eventId, "and userId:", userId);
         throw new Error('Method not implemented.');
     }*/
+   async getUserById(id: number): Promise<User> {
+      return this.userRepo.get(id);
+    }
 }
