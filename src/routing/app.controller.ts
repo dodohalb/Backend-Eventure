@@ -205,6 +205,29 @@ export class AppController {
     const eventArr =  await this.swipeService.getPublicEvent(filter, userId );
     return eventArr[0];
   }
+
+    @UseGuards(JwtAuthGuard)
+  @Post('getLikedEvents')
+  async getLikedEvents(@UserId() userId: number): Promise<Event> {
+    const eventArr =  await this.swipeService.getLikedEvents(userId );
+    return eventArr[0];
+  }
+
+      @UseGuards(JwtAuthGuard)
+  @Post('getJoinedEvents')
+  async getJoinedEvents(@UserId() userId: number): Promise<Event> {
+    const eventArr =  await this.swipeService.getJoinedEvents(userId );
+    return eventArr[0];
+  }
+
+
+      @UseGuards(JwtAuthGuard)
+  @Post('likeEvent')
+  async likeEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<void> {
+    this.swipeService.likeEvent(eventId, userId);
+  }
+
+
 /*
   @UseGuards(JwtAuthGuard)
   @Get('all-joined-events')
