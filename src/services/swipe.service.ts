@@ -48,7 +48,6 @@ export class SwipeService {
     async getPrivateEvent(filter: Filter, userId: number): Promise<Event[]> {
         this.logger.log(userId, "getPrivateEvents called ");
         const event = await this.evetRepo.findUnviewedPrivateForUser(userId,1)
-        await this.evetRepo.markEventsAsViewed(event, userId);
         if(event.length===0) return event;
         await this.evetRepo.markEventsAsViewed(event, userId)
         this.logger.log("Sending event:", event[0].id, "to user:", userId);
