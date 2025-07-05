@@ -8,6 +8,15 @@ import { PublicEvent } from 'src/domainObjects/publicEvent';
 
 @Injectable()
 export class SwipeService {
+  likeEvent(eventId: number, userId: number) {
+    throw new Error('Method not implemented.');
+  }
+  getJoinedEvents(userId: number) {
+    throw new Error('Method not implemented.');
+  }
+  getLikedEvents(userId: number) {
+    throw new Error('Method not implemented.');
+  }
     
 
     private readonly logger = new Logger(SwipeService.name);

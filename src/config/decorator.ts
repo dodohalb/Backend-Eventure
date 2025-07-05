@@ -1,8 +1,8 @@
-// src/common/decorators/user-id.decorator.ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { User } from 'src/domainObjects/user';
 
 export const UserId = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) =>
-    ctx.switchToHttp().getRequest<{ user: number }>().user,
+  (_: unknown, ctx: ExecutionContext) => {
+    const req = ctx.switchToHttp().getRequest();
+    return req.user as number;     // ← hier liegt deine reine ID
+  },
 );

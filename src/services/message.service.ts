@@ -70,6 +70,7 @@ export class MessageService {
 
     return allMessages;
   }
+   
 
   async notiffyUser(receivers: User[] |User, senderId: number, msg: string, data: any): Promise<void> {
     const online  : number[] = [];
@@ -91,8 +92,10 @@ export class MessageService {
 
       // 4) live senden
       for (const userId of online) {
+        this.logger.log(`Notifying online user ${userId} with message: ${msg}`);
         this.gateway.server.to(userId.toString()).emit(msg, data);
       }
+      
 
       //todo: benachrichte Offline recievers für GET unread Messages
       // 5) offline pushen

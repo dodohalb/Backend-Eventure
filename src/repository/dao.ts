@@ -1,6 +1,7 @@
 import { FindOptionsOrder, FindOptionsWhere } from "typeorm";
 
 export interface DAO<D, E = D> {
+    
   get(id: number): Promise<D>;
   getAll(D): Promise<D[]>;
   insert(obj: D): Promise<D>;

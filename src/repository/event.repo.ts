@@ -246,4 +246,19 @@ export class EventRepo implements DAO<Event> {
       throw new NotFoundException(`Kein Bild für Event ${eventId} gefunden`);
     }
 
+
+
+  async findPrivateEventsByUser(userId: number): Promise<PrivateEvent[]> {
+  this.logger.log(`Lade PrivateEvents für User ${userId}`);
+
+  // Suche in der privateRepo–Join‐Tabelle nach Events mit genau diesem User
+  const entities = await this.privateRepo.find({
+    where: { users: { id: userId } },
+    relations: ['users', 'users.address', 'address'],
+  });
+
+  // Mapping auf dein Domain‐Model
+  return entities.map(e => PrivateEventMapper.toDomain(e));
+}
+
 }

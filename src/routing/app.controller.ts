@@ -37,6 +37,8 @@ import { timestamp } from 'rxjs';
 import { PushService } from 'src/services/push.Service';
 import { DeviceTokenDto} from 'src/auth/deviceTokenDto';
 import { UserId } from 'src/config/decorator';
+import { createReadStream, existsSync } from 'fs';
+import { join } from 'path';
 
 @Controller()
 export class AppController {
@@ -67,8 +69,9 @@ export class AppController {
 
   /** Register new user (credentials + profile) → returns JWT on success */
   @Post('register')
-  async register(@Body('user') user: User,@Body('password') password: string,): Promise<{ msg: string; token: string; userID: number }> {
-    return this.authService.register(new LoginDto(user.phoneNumber, password), user);
+  async register(@Body('user') user: User,@Body('password') password: string,): Promise< {token: string}> {
+    const token = await this.authService.register(new LoginDto(user.phoneNumber, password), user);
+    return { "token": token };
   }
 
   // ─────────────────────── User management ───────────────────────
@@ -87,7 +90,7 @@ export class AppController {
   /** Host authorises (confirms) a participant */
   @UseGuards(JwtAuthGuard)
   @Post('users/authorize')
-  async authorizeUser(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<{ msg: string }> {
+  async authorizeUser(@Body('eventId') eventId: number, @Body('userId')  userId:  number,){
     return this.eventService.authorizeUser(eventId, userId);
   }
 
@@ -101,7 +104,7 @@ export class AppController {
   /** User swipes / joins an event */
   @UseGuards(JwtAuthGuard)
   @Post('join-event')
-  async joinEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<void> {
+  async joinEvent(@UserId() userId: number, @Body('eventId') eventId: number): Promise<void> {
     this.eventService.joinEvent(eventId, userId);
   }
 
@@ -179,6 +182,33 @@ export class AppController {
     return this.userService.getUserById(id);
   }
 
+  @Get('default-picture')                          // ->  http://host:3000/default-picture
+  async getDefaultPicture(@Res({ passthrough: true }) res: Response): Promise<StreamableFile> {
+
+    // 1️⃣  Absoluten Pfad ermitteln – immer korrekt, egal von wo gestartet
+    const filePath = join(__dirname, '..', '..', 'public', 'images', 'image.png');
+
+    // 2️⃣  Existenz prüfen (sonst 404)
+    if (!existsSync(filePath)) {
+      this.logger.warn(`Default picture not found at ${filePath}`);
+      res.status(404);
+      return new StreamableFile(Buffer.alloc(0));
+    }
+
+    this.logger.log('Serving default picture');
+
+    // 3️⃣  Content-Type setzen
+    res.setHeader('Content-Type', 'image/png');
+
+    // 4️⃣  Dateistream zurückgeben
+    return new StreamableFile(createReadStream(filePath));
+  }
+  
+
+    
+
+    
+    
 
 
 
@@ -206,37 +236,48 @@ export class AppController {
     return eventArr[0];
   }
 
-    @UseGuards(JwtAuthGuard)
-  @Post('getLikedEvents')
-  async getLikedEvents(@UserId() userId: number): Promise<Event> {
-    const eventArr =  await this.swipeService.getLikedEvents(userId );
-    return eventArr[0];
-  }
+ 
 
-      @UseGuards(JwtAuthGuard)
-  @Post('getJoinedEvents')
-  async getJoinedEvents(@UserId() userId: number): Promise<Event> {
-    const eventArr =  await this.swipeService.getJoinedEvents(userId );
-    return eventArr[0];
-  }
+  
 
 
-      @UseGuards(JwtAuthGuard)
+
+
+
+
+  @UseGuards(JwtAuthGuard)
   @Post('likeEvent')
-  async likeEvent(@Body('eventId') eventId: number, @Body('userId')  userId:  number,): Promise<void> {
-    this.swipeService.likeEvent(eventId, userId);
+  async likeEvent(@UserId() userId: number, @Body('eventId') eventId: number): Promise<void> {
+    this.eventService.likeEvent(eventId, userId);
   }
 
 
-/*
+
+
+
+
+
+
+
   @UseGuards(JwtAuthGuard)
   @Get('all-joined-events')
-  getSecret(@UserId() userId: number) {
-    this.logger.log("Request for all joined events from user: ", userId);
+  async getJoinedEvents(@UserId() userId: number) {
+    this.logger.log(`Request for all joined events from user: ${userId}`);
     return this.eventService.getAllEventsFromUser(userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('all-liked-events')
+  async getLikedEvents(@UserId() userId: number) {
+    this.logger.log(`Request for all liked events from user: ${userId}`);
+    return this.eventService.getAllLikedEvents(userId);
+  }
 
-*/
+  @UseGuards(JwtAuthGuard)
+  @Get('all-anfragen')
+  async getAllAnfragen(@UserId() userId: number) {
+    this.logger.log(`Request for all anfragen from user: ${userId}`);
+    return this.eventService.getAllAnfragen(userId);
+  }
 
 }

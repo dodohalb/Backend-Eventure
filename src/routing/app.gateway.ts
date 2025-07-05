@@ -35,7 +35,10 @@ export class Gateway implements OnGatewayConnection {
 
   // ─────────────────────── WebSocket ───────────────────────
   async handleConnection(client: Socket) {      // wird automatisch aufgerufen
+
+    this.eventService.zeigevent(); // Test: EventService initialisieren und ein Event anzeigen
   // 1) Authentifizieren
+    this.logger.log(`✚ client ${client.id} connected`);
     const userId = await this.authService.authenticate(client);
 
     if (!userId) {          // unauthenticated
@@ -71,6 +74,7 @@ export class Gateway implements OnGatewayConnection {
 
   @SubscribeMessage('ping') 
   handlePing(@MessageBody() data: any) {
+    this.logger.log(`Received ping from client: ${data}`);
     return 'pong';                    // Socket.io schickt als ACK zurück
   }
 

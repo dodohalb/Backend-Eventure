@@ -34,7 +34,7 @@ export class AuthService {
 
 
   /* -----------------------------  REGISTER  ----------------------------- */
-  async register(dto: LoginDto, user: User): Promise<{ msg: string, token: string, userID: number }> {
+  async register(dto: LoginDto, user: User): Promise<string>  {
     this.logger.log("Registering user:", user.name);
 
     /* 1) hash plaintext password with salt rounds = 12 */
@@ -60,7 +60,7 @@ export class AuthService {
 
     /* 5) issue JWT */
     const token = this.sign(newUser.id);
-    return { msg: "User registered successfully", token: token, userID: newUser.id };
+    return  token
   }
 
 

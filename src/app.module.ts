@@ -44,6 +44,10 @@ import { FirebaseProvider } from './routing/firebase.provider';
 import { DeviceTokenRepo } from './repository/deviceToken.repo';
 import { DeviceTokenEntity } from './entities/deviceToken.entity';
 import { ViewedEvent } from './entities/viewedEvents.entity';
+import { LikeDTO } from './entities/likeDto';
+import { LikeRepo } from './repository/like.repo';
+import { AnfragerRepo } from './repository/anfrager.repo';
+import { Anfrager } from './entities/anfrager';
 
 
 @Module({
@@ -65,7 +69,9 @@ import { ViewedEvent } from './entities/viewedEvents.entity';
         LoginEntity,
         InteractionEntity,
         ViewedEvent,
-        DeviceTokenEntity
+        DeviceTokenEntity,
+        LikeDTO,
+        Anfrager
       ],
       synchronize: true, //in Produktionsbetrieb auf false setzen
       autoLoadEntities: true,
@@ -81,7 +87,9 @@ import { ViewedEvent } from './entities/viewedEvents.entity';
     FilterEntity,
     LoginEntity,
     InteractionEntity,
-    DeviceTokenEntity
+    DeviceTokenEntity,
+    LikeDTO,
+    Anfrager
   ]),
 
   ServeStaticModule.forRoot({
@@ -103,7 +111,7 @@ import { ViewedEvent } from './entities/viewedEvents.entity';
     FirebaseProvider,
     AuthService, EventService, UserService, MessageService, SwipeService, PresenceService, PushService,
     AuthRepo, ChatRepo, EventRepo, UserRepo, DeviceTokenRepo,
-    JwtStrategy,
+    JwtStrategy, LikeRepo, AnfragerRepo
   ]
 })
 export class AppModule { }
