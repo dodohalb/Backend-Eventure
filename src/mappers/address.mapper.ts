@@ -20,7 +20,7 @@ export class AddressMapper {
       entity.postalCode,
       entity.city,
     );
-    ;(d as any).id = entity.id;
+    ;d.id = entity.id;
     return d;
   }
 }

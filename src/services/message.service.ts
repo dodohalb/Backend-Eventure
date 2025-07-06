@@ -73,6 +73,8 @@ export class MessageService {
    
 
   async notiffyUser(receivers: User[] |User, senderId: number, msg: string, data: any): Promise<void> {
+    this.logger.log(`Notifying users with message: ${msg} and data: ${data}`);
+    
     const online  : number[] = [];
     const offline : number[] = [];
 

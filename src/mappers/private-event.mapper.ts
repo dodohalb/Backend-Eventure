@@ -34,7 +34,7 @@ export class PrivateEventMapper {
   static toDomain(entity: PrivateEventEntity): PrivateEvent {
     const d = new PrivateEvent(
       AddressMapper.toDomain(entity.address),
-      entity.picture,
+      null,
       entity.name,
       entity.description,
       entity.date,

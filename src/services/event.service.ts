@@ -16,6 +16,12 @@ import { UserMapper } from 'src/mappers/user.mapper';
 
 @Injectable()
 export class EventService {
+  //       const anfrager = await this.anfragerRepo.getAll(event.id!);
+  //       anfragen.push(...anfrager);
+  //    }
+  //     return anfragen;
+  // }
+  
  
   
   
@@ -41,10 +47,7 @@ export class EventService {
     }
 
 
-    async  zeigevent() {
-    const event = await this.eventRepo.get(58);
-    this.logger.error("EventService initialized with event:", event);
-}
+   
 
     /* Update an existing event (TODO: implement DB logic) */
     async updateEvent(file: Express.Multer.File, eventString: string): Promise<{ msg: string }> {
@@ -229,6 +232,15 @@ export class EventService {
     return this.likeRepo.insert(dto);
   }
 
+  removeLikedEvent(eventId: number, userId: number) {
+    this.logger.log(`removeLikedEvent called with eventId=${eventId}, userId=${userId}`);
+
+    const dto = new LikeDTO();
+    dto.eventId = eventId;
+    dto.userId = userId;
+    return this.likeRepo.delete(dto);
+  }
+
 
 //   async getAllAnfragen(userId: number) {
 
@@ -252,11 +264,16 @@ async getAllAnfragen(userId: number): Promise<{ eventId: number; user: User }[]>
   // 1) Alle PrivateEvents, bei denen dieser userId im users-Array ist
   const eventsFromUser = await this.eventRepo.findPrivateEventsByUser(userId);
 
-  // 2) Array für alle Ergebnisse
+  // 2) Events Filtern wo der creator der User ist
+  const filteredEvents = eventsFromUser.filter(event => event.creatorId === userId);
+
+  // 3) Array für alle Ergebnisse
   const result: { eventId: number; user: User }[] = [];
 
-  // 3) Für jedes Event alle Anfrager (DTOs mit userId und eventId) laden
-  for (const ev of eventsFromUser) {
+
+
+  // 4) Für jedes Event alle Anfrager (DTOs mit userId und eventId) laden
+  for (const ev of filteredEvents) {
     const asks = await this.anfragerRepo.getAll(ev.id!);
     for (const askDto of asks) {
       // 4) Vollständiges User-Domain-Objekt laden

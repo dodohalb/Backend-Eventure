@@ -131,7 +131,7 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Post('unread-messages')
-  async getUnreadMessages(@Body('lastSeen')timestamp: Date, @Body('userId') userId: number): Promise<ChatMessage[]>{
+  async getUnreadMessages(@Body('lastSeen')timestamp: Date, @UserId() userId: number): Promise<ChatMessage[]>{
     return this.messageService.getUnreadMessages(timestamp, userId);
   }
 
@@ -226,6 +226,7 @@ export class AppController {
   @Post('getPrivateEvent')
   async getPrivateEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event> {
     const eventArr=  await this.swipeService.getPrivateEvent(filter, userId );
+    if (eventArr[0]) eventArr[0].picture=null;
     return eventArr[0];
   }
 
@@ -278,6 +279,14 @@ export class AppController {
   async getAllAnfragen(@UserId() userId: number) {
     this.logger.log(`Request for all anfragen from user: ${userId}`);
     return this.eventService.getAllAnfragen(userId);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Post('removelikedEvent')
+  async removeLikedEvent(@UserId() userId: number, @Body('eventId') eventId: number) {
+    this.logger.log(`removeLikedEvent called for userId: ${userId}, eventId: ${eventId}`);
+    await this.eventService.removeLikedEvent(eventId, userId);
   }
 
 }

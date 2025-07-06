@@ -147,7 +147,9 @@ export class EventRepo implements DAO<Event> {
           { userId }            // Parameter für :userId
         );
         // 3) Füge eine WHERE-Klausel hinzu, um nur die Events zu bekommen, die nicht in der View-Tabelle sind
-        qry.where('v.eventId IS NULL');
+        qry.where('v.eventId IS NULL')
+                // 3.1) UND: Ausschluss aller eigenen Events
+            .andWhere('e.creatorId != :userId', { userId });
 
         // 4) Optional Filter nach Datum, falls angegeben
         if (date) { qry.andWhere('e.date = :date', { date }); };
@@ -185,7 +187,9 @@ export class EventRepo implements DAO<Event> {
           { userId }            // Parameter für :userId
         );
         // 3) Füge eine WHERE-Klausel hinzu, um nur die Events zu bekommen, die nicht in der View-Tabelle sind
-        qry.where('v.eventId IS NULL');
+        qry.where('v.eventId IS NULL')
+            // 3.1) UND: Ausschluss aller eigenen Events
+        .andWhere('e.creatorId != :userId', { userId });
 
         // 4) Optional Filter nach Datum, falls angegeben
         if (date) { qry.andWhere('e.date = :date', { date }); }
