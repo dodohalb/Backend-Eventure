@@ -47,12 +47,12 @@ export class EventRepo implements DAO<Event> {
 
   /** Liefert PublicEvent oder PrivateEvent je nach gefundenem Entity */
   async get(id: number): Promise<Event> {
-    const pe = await this.publicRepo.findOne({ where: { id } });
+    const pe = await this.publicRepo.findOne({ where: { id }, });
     if (pe) {
       this.logger.log(`Loaded PublicEvent ${id}`);
       return PublicEventMapper.toDomain(pe);
     }
-    const priv = await this.privateRepo.findOne({ where: { id } });
+    const priv = await this.privateRepo.findOne({ where: { id }, relations: ['address', 'users', 'users.address'], });
     if (priv) {
       this.logger.log(`Loaded PrivateEvent ${id}`);
       return PrivateEventMapper.toDomain(priv);
@@ -252,17 +252,44 @@ export class EventRepo implements DAO<Event> {
 
 
 
-  async findPrivateEventsByUser(userId: number): Promise<PrivateEvent[]> {
+//   async findPrivateEventsByUser(userId: number): Promise<PrivateEvent[]> {
+//   this.logger.log(`Lade PrivateEvents für User ${userId}`);
+
+//   // Suche in der privateRepo–Join‐Tabelle nach Events mit genau diesem User
+//   const entities = await this.privateRepo.find({
+//     where: { users: { id: userId } },
+//     relations: ['users', 'users.address', 'address'],
+//   });
+
+//   // Mapping auf dein Domain‐Model
+//   return entities.map(e => PrivateEventMapper.toDomain(e));
+// }
+async findPrivateEventsByUser(userId: number): Promise<PrivateEvent[]> {
   this.logger.log(`Lade PrivateEvents für User ${userId}`);
 
-  // Suche in der privateRepo–Join‐Tabelle nach Events mit genau diesem User
-  const entities = await this.privateRepo.find({
-    where: { users: { id: userId } },
-    relations: ['users', 'users.address', 'address'],
-  });
+  const qb = this.privateRepo
+    .createQueryBuilder('e')
+    // 1) Nur über diesen JOIN filtern, ohne zu selektieren
+    .innerJoin('e.users', 'filterUser', 'filterUser.id = :userId', { userId })
+    // 2) Jetzt alle users komplett holen
+    .leftJoinAndSelect('e.users', 'users')
+    .leftJoinAndSelect('users.address', 'userAddress')
+    // 3) Und natürlich auch die Event-Adresse
+    .leftJoinAndSelect('e.address', 'address');
 
-  // Mapping auf dein Domain‐Model
+  const entities = await qb.getMany();
+  this.logger.log(`  → QueryBuilder returned ${entities.length} events`);
+
   return entities.map(e => PrivateEventMapper.toDomain(e));
 }
+
+
+async addUserToPrivateEvent(eventId: number, userId: number): Promise<void> {
+    await this.privateRepo
+      .createQueryBuilder()
+      .relation(PrivateEventEntity, 'users')
+      .of(eventId)    // Event mit dieser ID
+      .add(userId);   // User mit dieser ID
+  }
 
 }

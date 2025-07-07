@@ -254,6 +254,13 @@ export class AppController {
 
 
 
+@UseGuards(JwtAuthGuard)
+@Post("deleteAnfrage")
+async deleteAnfrage(@Body('eventId') eventId: number, @Body('userId') userId: number): Promise<void> {
+  this.logger.log(`deleteAnfrage called for userId: ${userId}, eventId: ${eventId}`);
+  await this.eventService.deleteAnfrage(eventId, userId);
+}
+
 
 
 

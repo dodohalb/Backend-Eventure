@@ -56,26 +56,7 @@ export class AnfragerRepo  {
     return this.repo.save(obj);
   }
 
-  /**
-   * Löscht eine Anfrage anhand von userId + eventId.
-   */
-  async delete(obj: Anfrager): Promise<Anfrager> {
-    const { userId, eventId } = obj;
-    this.logger.log(`delete called with userId=${userId}, eventId=${eventId}`);
 
-    const existing = await this.repo.findOne({
-      where: { userId, eventId },
-    });
-    if (!existing) {
-      throw new NotFoundException(
-        `Anfrager for userId=${userId} and eventId=${eventId} not found`,
-      );
-    }
-
-    await this.repo.remove(existing);
-    this.logger.log(`Deleted Anfrager userId=${userId}, eventId=${eventId}`);
-    return existing;
-  }
 
   // bleiben unimplementiert:
   findOne(where: any, opts?: any): Promise<any> {
@@ -84,4 +65,32 @@ export class AnfragerRepo  {
   findMany(where: any, opts?: any): Promise<Anfrager[]> {
     throw new Error('Method not implemented.');
   }
+
+
+
+   async getAllAnfragenByCreator(creatorId: number): Promise<Anfrager[]> {
+    this.logger.log(`getAllAnfragenByCreator called for creatorId=${creatorId}`);
+    return this.repo
+      .createQueryBuilder('a')
+      .innerJoin('a.event', 'e')
+      .innerJoinAndSelect('a.user', 'u')
+      .where('e.creatorId = :creatorId', { creatorId })
+      .getMany();
+  }
+
+  
+
+  async delete(obj: Anfrager): Promise<void> {
+  const { userId, eventId } = obj;
+  this.logger.log(`delete called with userId=${userId}, eventId=${eventId}`);
+
+  const res = await this.repo.delete({ userId, eventId });
+  this.logger.log(`→ actual rows deleted: ${res.affected}`);
+
+  if (res.affected === 0) {
+    throw new NotFoundException(
+      `No Anfrager found for userId=${userId} & eventId=${eventId}`,
+    );
+  }
+}
 }

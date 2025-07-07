@@ -16,6 +16,7 @@ import { UserMapper } from 'src/mappers/user.mapper';
 
 @Injectable()
 export class EventService {
+  
   //       const anfrager = await this.anfragerRepo.getAll(event.id!);
   //       anfragen.push(...anfrager);
   //    }
@@ -110,17 +111,18 @@ export class EventService {
         const user = await this.userRepo.get(userId);
         if (!user) throw new NotFoundException(`User ${userId} nicht gefunden`);
 
-        // 3) Füge ihn der Liste der bestätigten Teilnehmer hinzu
-        event.addUser(user);
+        // 3) Füge den User über das ganze Domain-Objekt hinzu
+        await this.eventRepo.addUserToPrivateEvent(eventId, userId);
+        
 
-        // 4) Persistiere Update
-        const updatedEvent = await this.eventRepo.update(event);
-
+      // 4) lade updated Event
+        const updatedEvent = await this.eventRepo.get(eventId) as PrivateEvent;
+        this.logger.log(`→ After add: ${updatedEvent.getUsers().length} users`);
 
         // 5) Benachrichtige alle User des Events
       
         if (updatedEvent.creatorId) {
-            await this.messageService.notiffyUser(updatedEvent.getUsers(), updatedEvent.creatorId, 'eventUpdate', updatedEvent);
+            await this.messageService.notiffyUser(updatedEvent.getUsers(), updatedEvent.creatorId, 'update', updatedEvent);
             return;
         }
         throw new NotFoundException(`Creator of event ${eventId} not found`);
@@ -163,7 +165,7 @@ export class EventService {
                 if(event.authorization && event.creatorId){
                     const admin = await this.userRepo.get(event.creatorId);
                     const user = await this.userRepo.get(userId);
-                    this.messageService.notiffyUser(admin, userId, 'userWantToJoin', {eventId: event.id, user: user});
+                    this.messageService.notiffyUser(admin, userId, 'wantJoin', {eventId: event.id, user: user});
                     const anfrager = new Anfrager();
                     anfrager.eventId = event.id!;
                     anfrager.userId = user.id!;
@@ -201,9 +203,24 @@ export class EventService {
        
        
        
-  getAllEventsFromUser(userId: number) {
-        this.logger.log(`getAllEventsFromUser called for userId: ${userId}`);
-        return this.eventRepo.findPrivateEventsByUser(userId);  
+  // getAllEventsFromUser(userId: number) {
+  //       this.logger.log(`getAllEventsFromUser called for userId: ${userId}`);
+  //       return this.eventRepo.findPrivateEventsByUser(userId);  
+  // }
+  async getAllEventsFromUser(userId: number): Promise<PrivateEvent[]> {
+    this.logger.log(`getAllEventsFromUser called for userId: ${userId}`);
+
+    // 1) Events abfragen
+    const events = await this.eventRepo.findPrivateEventsByUser(userId);
+
+    // 2) Anzahl und Details loggen
+    this.logger.log(`→ Found ${events.length} private events for user ${userId}`);
+    for (const ev of events) {
+      this.logger.log("   • Event :", ev);
+    }
+
+    // 3) zurückgeben
+    return events;
   }
 
 
@@ -242,52 +259,49 @@ export class EventService {
   }
 
 
-//   async getAllAnfragen(userId: number) {
-
-//     this.logger.log(`getAllAnfragen called for userId: ${userId}`);
-//     const eventsFromUser = await this.eventRepo.findPrivateEventsByUser(userId);
-//     const anfragen: Anfrager[] = [];
 
 
-//     for (const event of eventsFromUser) {
-//       const anfrager = await this.anfragerRepo.getAll(event.id!);
-//       anfragen.push(...anfrager);
-//    }
 
+  async getAllAnfragen(userId: number): Promise<{ eventId: number; user: User }[]> {
+    this.logger.log(`getAllAnfragen called for userId: ${userId}`);
 
-//     return anfragen;
-// }
+    // 1) Roh-Daten aus dem Repo holen
+    const asksDtos = await this.anfragerRepo.getAllAnfragenByCreator(userId);
+    this.logger.log(`  → Backend returned ${asksDtos.length} Anfrager-DTOs`);
 
-async getAllAnfragen(userId: number): Promise<{ eventId: number; user: User }[]> {
+    // 2) Mappen auf Domain-Objekte
+    const result: { eventId: number; user: User }[] = [];
+    for (const dto of asksDtos) {
+      const userEntity = await this.userRepo.get(dto.userId);
+      result.push({ eventId: dto.eventId, user: userEntity });
+    }
+
+    this.logger.log(`  → Mapped and returning ${result.length} Anfragen`);
+    return result;
+  }
+  async getAllAnfragen3(userId: number): Promise<{ eventId: number; user: User }[]> {
   this.logger.log(`getAllAnfragen called for userId: ${userId}`);
 
-  // 1) Alle PrivateEvents, bei denen dieser userId im users-Array ist
-  const eventsFromUser = await this.eventRepo.findPrivateEventsByUser(userId);
+  // 1) Roh-DTOs laden
+  const asksDtos = await this.anfragerRepo.getAllAnfragenByCreator(userId);
+  this.logger.log(`→ Backend returned ${asksDtos.length} Anfrager-DTOs`);
 
-  // 2) Events Filtern wo der creator der User ist
-  const filteredEvents = eventsFromUser.filter(event => event.creatorId === userId);
-
-  // 3) Array für alle Ergebnisse
+  // 2) Mapping auf Domain-Objekte
   const result: { eventId: number; user: User }[] = [];
-
-
-
-  // 4) Für jedes Event alle Anfrager (DTOs mit userId und eventId) laden
-  for (const ev of filteredEvents) {
-    const asks = await this.anfragerRepo.getAll(ev.id!);
-    for (const askDto of asks) {
-      // 4) Vollständiges User-Domain-Objekt laden
-      const userEntity = await this.userRepo.get(askDto.userId);
-
-      result.push({
-        eventId: askDto.eventId,
-        user:    userEntity,
-      });
-    }
+  for (const dto of asksDtos) {
+    const userEntity = await this.userRepo.get(dto.userId);
+    result.push({ eventId: dto.eventId, user: userEntity });
   }
+  this.logger.log(`→ Mapped and returning ${result.length} Anfragen`);
 
-  this.logger.log(`Found ${result.length} Anfragen for userId ${userId}`);
   return result;
+}
+
+deleteAnfrage(eventId: number, userId: number) {
+  const a = new Anfrager();
+  a.eventId = eventId;
+  a.userId  = userId;
+  return this.anfragerRepo.delete(a);
 }
 
 
