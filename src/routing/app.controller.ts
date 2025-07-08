@@ -226,6 +226,8 @@ export class AppController {
   @Post('getPrivateEvent')
   async getPrivateEvents(@UserId() userId: number, @Body('filter') filter: Filter): Promise<Event> {
     const eventArr=  await this.swipeService.getPrivateEvent(filter, userId );
+
+
     if (eventArr[0]) eventArr[0].picture=null;
     return eventArr[0];
   }
